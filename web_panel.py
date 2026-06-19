@@ -487,6 +487,17 @@ PANEL_HTML = r"""
   </div>
 
   <div class="setting-group">
+    <label>剪贴板监控</label>
+    <div class="setting-row">
+      <label class="save-toggle" style="font-size:13px;color:var(--text);cursor:pointer;">
+        <input type="checkbox" id="clipboardToggle" checked onchange="onToggleMonitor(this.checked)">
+        <span>启用剪贴板自动识别</span>
+      </label>
+      <span style="font-size:11px;color:var(--text2);">关闭后可仅使用搜索框查询</span>
+    </div>
+  </div>
+
+  <div class="setting-group">
     <label>数据设置</label>
     <div class="setting-row">
       <span style="font-size:12px;">默认条数</span>
@@ -744,6 +755,18 @@ function onClearCache() {
   showToast('🔄 缓存已清空');
 }
 
+function onToggleMonitor(enabled) {
+  pywebview.api.toggle_clipboard_monitor().then(function(isOn) {
+    var toggle = document.getElementById('clipboardToggle');
+    toggle.checked = isOn;
+    if (isOn) {
+      showToast('🟢 剪贴板监控已开启');
+    } else {
+      showToast('⏸ 剪贴板监控已暂停 — 仍可手动查询');
+    }
+  });
+}
+
 function onConfigChange(key, value) {
   pywebview.api.set_config(key, value);
   showToast('⚙️ 已保存: ' + key);
@@ -803,6 +826,10 @@ function loadConfig() {
       if (cfg.poll_interval !== undefined) document.getElementById('pollInterval').value = cfg.poll_interval;
       if (cfg.cache_ttl !== undefined) document.getElementById('cacheTTL').value = cfg.cache_ttl;
     }
+  });
+  // Sync clipboard toggle
+  pywebview.api.is_monitoring().then(function(on) {
+    document.getElementById('clipboardToggle').checked = on;
   });
 }
 
@@ -871,6 +898,14 @@ class PanelAPI:
 
     def clear_cache(self) -> None:
         self._clipper.clear_cache()
+
+    def toggle_clipboard_monitor(self) -> bool:
+        """Toggle clipboard monitoring. Returns new state (True=on)."""
+        return self._clipper.toggle_clipboard_monitor()
+
+    def is_monitoring(self) -> bool:
+        """Check if clipboard monitoring is active."""
+        return self._clipper.is_monitoring()
 
     def get_status(self) -> str:
         return self._clipper.get_status()

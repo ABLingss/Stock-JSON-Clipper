@@ -20,9 +20,11 @@ import signal
 import sys
 
 # Fix UnicodeEncodeError on Windows console (GBK can't encode emoji)
-if sys.stdout.encoding and sys.stdout.encoding.upper() in ('GBK', 'CP936', 'CP950'):
+# Note: sys.stdout is None in --noconsole (Windows GUI) mode
+if sys.stdout is not None and sys.stdout.encoding:
     try:
-        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        if sys.stdout.encoding.upper() in ('GBK', 'CP936', 'CP950'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     except Exception:
         pass
 

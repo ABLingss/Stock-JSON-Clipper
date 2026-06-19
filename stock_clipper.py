@@ -385,6 +385,23 @@ class StockClipper:
         """Clear the in-memory cache."""
         self._cache.clear()
 
+    def toggle_clipboard_monitor(self) -> bool:
+        """Toggle clipboard monitoring on/off. Returns new state (True=monitoring)."""
+        if self._clipboard_monitor is None:
+            return False
+        if self._clipboard_monitor.is_paused:
+            self._clipboard_monitor.resume()
+            return True
+        else:
+            self._clipboard_monitor.pause()
+            return False
+
+    def is_monitoring(self) -> bool:
+        """Check if clipboard monitoring is active."""
+        if self._clipboard_monitor is None:
+            return False
+        return not self._clipboard_monitor.is_paused
+
     def get_status(self) -> str:
         """Get current status ('monitoring' or 'fetching')."""
         return "fetching" if self._fetching.is_set() else "monitoring"

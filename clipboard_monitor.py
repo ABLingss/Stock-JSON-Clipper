@@ -113,6 +113,7 @@ class ClipboardMonitor:
         self._poll_interval = poll_interval
         self._thread: Optional[threading.Thread] = None
         self._running = threading.Event()
+        self._paused = threading.Event()  # when set, polling is paused
         self._last_text: str = ""
         self._last_trigger_time: float = 0.0
         self._last_code: str = ""
@@ -132,21 +133,34 @@ class ClipboardMonitor:
             self._thread.join(timeout=2.0)
             self._thread = None
 
+    def pause(self) -> None:
+        """Pause clipboard monitoring (polling continues but ignores results)."""
+        self._paused.set()
+
+    def resume(self) -> None:
+        """Resume clipboard monitoring after pause()."""
+        self._paused.clear()
+
     @property
     def is_running(self) -> bool:
         return self._running.is_set()
 
+    @property
+    def is_paused(self) -> bool:
+        return self._paused.is_set()
+
     def _poll_loop(self) -> None:
         """Main polling loop. Runs in background thread."""
         while self._running.is_set():
-            try:
-                text = pyperclip.paste()
-                if text and text != self._last_text:
-                    self._last_text = text
-                    self._handle_text(text)
-            except Exception:
-                # pyperclip may fail on headless systems; silently ignore
-                pass
+            if not self._paused.is_set():
+                try:
+                    text = pyperclip.paste()
+                    if text and text != self._last_text:
+                        self._last_text = text
+                        self._handle_text(text)
+                except Exception:
+                    # pyperclip may fail on headless systems; silently ignore
+                    pass
 
             time.sleep(self._poll_interval)
 
