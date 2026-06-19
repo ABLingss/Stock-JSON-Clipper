@@ -197,16 +197,25 @@ class StockClipper:
             try:
                 self._process_request(request)
             except Exception as e:
-                import traceback
-                traceback.print_exc()
+                import traceback, io
+                tb_lines = traceback.format_exc()
+                # Log to file for diagnostics
+                try:
+                    with open(os.path.join(os.getcwd(), "error.log"), "w", encoding="utf-8") as log:
+                        log.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {request.code}\n")
+                        log.write(tb_lines)
+                except Exception:
+                    pass
+                # Show detailed error in panel history
+                err_detail = f"{type(e).__name__}: {e}"
                 result = FetchResult(
                     code=request.code,
                     status="error",
                     period=request.period,
-                    message=f"内部错误: {e}",
+                    message=f"内部错误: {err_detail}",
                 )
                 self._add_history(result)
-                self._notify("❌ 处理失败", f"{request.code}: {e}")
+                self._notify("处理失败", f"{request.code}: {err_detail}")
 
             self._fetching.clear()
             self._signal_status("monitoring")
