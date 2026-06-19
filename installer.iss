@@ -24,8 +24,8 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=lowest
-; Windows 7+ compatible
-MinVersion=6.1
+; Windows 10+ (WebView2 + Python 3.14)
+MinVersion=10.0
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
