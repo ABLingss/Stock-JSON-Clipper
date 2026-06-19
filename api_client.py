@@ -103,12 +103,19 @@ def _tct_kline(code: str, period: str, count: int, timeout: int) -> List[Dict[st
     resp.raise_for_status()
     data = resp.json()
 
+    # Tencent API may return list instead of dict when count exceeds available data
+    if isinstance(data, list):
+        raise StockError(code, "腾讯API返回数据格式异常(超量请求)")
+
     if data.get("code") != 0:
-        raise StockError(code, "腾讯API返回错误")
+        raise StockError(code, "腾讯API返回错误: " + str(data.get("msg", "")))
 
     symbol = f"{prefix}{code}"
     kline_key = f"qfq{tct_period}"
-    raw_bars = data.get("data", {}).get(symbol, {}).get(kline_key, [])
+    stock_data = data.get("data", {})
+    if not isinstance(stock_data, dict):
+        raise StockError(code, "腾讯API返回数据格式异常")
+    raw_bars = stock_data.get(symbol, {}).get(kline_key, [])
 
     if not raw_bars:
         raise StockError(code, "腾讯API无K线数据")

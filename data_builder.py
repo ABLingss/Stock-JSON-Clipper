@@ -86,11 +86,11 @@ def build_json(
     market_info = _determine_market_label(code)
 
     # Dates
-    start_date = kline_data[0]["date"] if kline_data else ""
-    end_date = kline_data[-1]["date"] if kline_data else ""
+    start_date = kline_data[0].get("date", "") if kline_data else ""
+    end_date = kline_data[-1].get("date", "") if kline_data else ""
 
     # Technical indicators (on closing prices)
-    closes = [bar["close"] for bar in kline_data]
+    closes = [bar.get("close", 0.0) for bar in kline_data]
     indicators = calc_all_indicators(closes)
 
     # Statistical summary

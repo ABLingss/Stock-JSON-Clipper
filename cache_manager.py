@@ -94,14 +94,20 @@ class CacheManager:
                 removed += 1
         return removed
 
-    def make_key(self, code: str, period: str) -> str:
-        """Build a standard cache key from stock code and period.
+    def make_key(self, code: str, period: str, count: int = 0) -> str:
+        """Build a standard cache key from stock code, period, and count.
+
+        Cache key includes count to avoid returning wrong-sized cached data
+        when the user requests a different number of bars.
 
         Args:
             code: 6-digit stock code.
             period: 'daily', 'weekly', or 'monthly'.
+            count: Number of K-line bars requested (0 = count not used in key).
 
         Returns:
-            Cache key string like "000001_daily".
+            Cache key string like "000001_daily_250".
         """
+        if count > 0:
+            return f"{code}_{period}_{count}"
         return f"{code}_{period}"

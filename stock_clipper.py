@@ -42,6 +42,7 @@ class FetchResult:
         period: str = "daily",
         count: int = 0,
         message: str = "",
+        cache_key: str = "",
     ) -> None:
         self.timestamp = time.strftime("%H:%M:%S")
         self.code = code
@@ -50,6 +51,7 @@ class FetchResult:
         self.period = period
         self.count = count
         self.message = message
+        self.cache_key = cache_key  # exact cache key used for this result
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -215,8 +217,9 @@ class StockClipper:
         Args:
             request: StockRequest to process.
         """
-        # 1. Check cache
-        cache_key = self._cache.make_key(request.code, request.period)
+        # 1. Check cache (key includes period + count to avoid mismatch)
+        count = self._config.get("default_count", 250)
+        cache_key = self._cache.make_key(request.code, request.period, count)
         cached = self._cache.get(cache_key)
         if cached is not None:
             # Cached hit — write cached JSON to clipboard, #save mode writes fresh
@@ -240,7 +243,6 @@ class StockClipper:
                 self._cache.remove(cache_key)
 
         # 2. Fetch data
-        count = self._config.get("default_count", 250)
         try:
             kline_data = fetch_kline(
                 request.code,
@@ -293,6 +295,7 @@ class StockClipper:
                 status="success",
                 period=request.period,
                 count=len(kline_data),
+                cache_key=cache_key,
                 message=f"{len(kline_data)}条数据",
             )
             self._notify(
@@ -420,9 +423,6 @@ class StockClipper:
     def get_result_detail(self) -> Optional[Dict[str, Any]]:
         """Get detailed info from the last fetch result for panel display.
 
-        Returns the raw cached JSON data (meta, indicators, summary) of the
-        most recent fetch, suitable for rendering the result card in the UI.
-
         Returns:
             Dict with 'meta', 'indicators', 'summary' keys, or None if no data.
         """
@@ -430,7 +430,10 @@ class StockClipper:
         if last is None:
             return None
 
-        cache_key = self._cache.make_key(last.code, last.period)
+        # Use stored cache_key if available, otherwise try default count
+        cache_key = last.cache_key if last.cache_key else self._cache.make_key(
+            last.code, last.period, self._config.get("default_count", 250)
+        )
         cached_json = self._cache.get(cache_key)
         if cached_json:
             try:
@@ -442,6 +445,22 @@ class StockClipper:
                 }
             except json.JSONDecodeError:
                 pass
+
+        # Fallback: try with any count (for data cached before cache_key fix)
+        if not last.cache_key:
+            for count in [250, 100, 50, 500, 1000]:
+                try_key = self._cache.make_key(last.code, last.period, count)
+                cached_json = self._cache.get(try_key)
+                if cached_json:
+                    try:
+                        data = json.loads(cached_json)
+                        return {
+                            "meta": data.get("meta", {}),
+                            "indicators": data.get("indicators", {}),
+                            "summary": data.get("summary", {}),
+                        }
+                    except json.JSONDecodeError:
+                        pass
 
         return {
             "meta": {

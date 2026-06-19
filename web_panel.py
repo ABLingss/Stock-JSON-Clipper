@@ -1011,7 +1011,8 @@ class PanelAPI:
         last = self._clipper.get_last_result()
         if last is None:
             return {"success": False, "error": "暂无数据"}
-        cache_key = self._clipper._cache.make_key(last.code, last.period)
+        cache_key = last.cache_key or self._clipper._cache.make_key(
+            last.code, last.period, self._clipper._config.get("default_count", 250))
         cached_json = self._clipper._cache.get(cache_key)
         if cached_json:
             pyperclip.copy(cached_json)
@@ -1022,7 +1023,8 @@ class PanelAPI:
         last = self._clipper.get_last_result()
         if last is None:
             return {"success": False, "error": "暂无数据"}
-        cache_key = self._clipper._cache.make_key(last.code, last.period)
+        cache_key = last.cache_key or self._clipper._cache.make_key(
+            last.code, last.period, self._clipper._config.get("default_count", 250))
         cached_json = self._clipper._cache.get(cache_key)
         if not cached_json:
             return {"success": False, "error": "缓存已过期，请重新查询"}
