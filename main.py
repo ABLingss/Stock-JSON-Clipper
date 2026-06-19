@@ -19,6 +19,13 @@ import os
 import signal
 import sys
 
+# Fix UnicodeEncodeError on Windows console (GBK can't encode emoji)
+if sys.stdout.encoding and sys.stdout.encoding.upper() in ('GBK', 'CP936', 'CP950'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 # Ensure the project root is on sys.path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
