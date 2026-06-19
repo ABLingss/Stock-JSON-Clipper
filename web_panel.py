@@ -977,34 +977,45 @@ class PanelAPI:
         return self._clipper.get_result_detail()
 
     def search_stock(self, code: str, period: str = "daily", save_mode: bool = False) -> Dict[str, Any]:
-        from clipboard_monitor import parse_clipboard
-        code = code.strip()
-        request = parse_clipboard(code)
-        if request:
-            actual_code, actual_period, actual_save = request.code, request.period, request.save_mode
-        else:
-            if not code.isdigit() or len(code) != 6:
-                return {"success": False, "error": "无效的股票代码，请输入6位数字"}
-            actual_code, actual_period, actual_save = code, period, save_mode
-        if period != "daily" and actual_period == "daily":
-            actual_period = period
-        if save_mode:
-            actual_save = True
+        import os, time as _time
+        try:
+            from clipboard_monitor import parse_clipboard
+            code = code.strip()
+            request = parse_clipboard(code)
+            if request:
+                actual_code, actual_period, actual_save = request.code, request.period, request.save_mode
+            else:
+                if not code.isdigit() or len(code) != 6:
+                    return {"success": False, "error": "无效的股票代码，请输入6位数字"}
+                actual_code, actual_period, actual_save = code, period, save_mode
+            if period != "daily" and actual_period == "daily":
+                actual_period = period
+            if save_mode:
+                actual_save = True
 
-        result = self._clipper.fetch_manual(actual_code, actual_period)
+            result = self._clipper.fetch_manual(actual_code, actual_period)
 
-        if actual_save:
-            from clipboard_monitor import StockRequest
+            if actual_save:
+                from clipboard_monitor import StockRequest
+                try:
+                    self._clipper._fetch_queue.put_nowait(
+                        StockRequest(code=actual_code, period=actual_period, save_mode=True, raw=code)
+                    )
+                except Exception:
+                    pass
+
+            if result.status == "error":
+                return {"success": False, "error": result.message}
+            return {"success": True}
+        except Exception as e:
+            import traceback
             try:
-                self._clipper._fetch_queue.put_nowait(
-                    StockRequest(code=actual_code, period=actual_period, save_mode=True, raw=code)
-                )
+                with open(os.path.join(os.getcwd(), "error.log"), "w", encoding="utf-8") as f:
+                    f.write(f"[{_time.strftime('%Y-%m-%d %H:%M:%S')}] PanelAPI.search_stock\n")
+                    f.write(traceback.format_exc())
             except Exception:
                 pass
-
-        if result.status == "error":
-            return {"success": False, "error": result.message}
-        return {"success": True}
+            return {"success": False, "error": f"{type(e).__name__}: {e}"}
 
     def copy_last_json(self) -> Dict[str, Any]:
         import pyperclip
