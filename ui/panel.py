@@ -1119,11 +1119,11 @@ class PanelAPI:
 
             if actual_save:
                 from core.clipboard import StockRequest
-                if self._clipper._fetch_pool:
-                    self._clipper._fetch_pool.submit(
-                        self._clipper._fetch_with_status,
-                        StockRequest(code=actual_code, period=actual_period, save_mode=True, raw=code)
-                    )
+                try:
+                    self._clipper._fetch_queue.put_nowait(
+                        StockRequest(code=actual_code, period=actual_period, save_mode=True, raw=code))
+                except Exception:
+                    pass
 
             if result.status == "error":
                 return {"success": False, "error": result.message}

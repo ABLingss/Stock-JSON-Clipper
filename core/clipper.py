@@ -14,10 +14,10 @@ Communication between threads via queue.Queue.
 
 import json
 import os
+import queue
 import threading
 import time
 from collections import deque
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from api.client import fetch_kline, fetch_stock_info, StockError
@@ -101,8 +101,9 @@ class StockClipper:
         self._last_fetch_time: Dict[str, float] = {}
         self._dedup_lock = threading.Lock()
 
-        # Fetch pool: parallel processing with max 2 workers
-        self._fetch_pool: Optional[ThreadPoolExecutor] = None
+        # Simple fetch queue + single worker thread
+        self._fetch_queue: queue.Queue = queue.Queue()
+        self._fetch_thread: Optional[threading.Thread] = None
 
         # History
         self._history: deque = deque(maxlen=self.MAX_HISTORY)
@@ -132,8 +133,10 @@ class StockClipper:
         # Start module lifecycle
         self.registry.start_all()
 
-        # Start fetch pool (max 2 parallel fetches)
-        self._fetch_pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="fetch")
+        # Start simple fetch worker
+        self._fetch_thread = threading.Thread(
+            target=self._fetch_worker, daemon=True, name="fetch-worker")
+        self._fetch_thread.start()
 
         # Start clipboard monitor
         self._clipboard_monitor = ClipboardMonitor(
@@ -152,10 +155,13 @@ class StockClipper:
         if self._clipboard_monitor:
             self._clipboard_monitor.stop()
 
-        # Shutdown fetch pool gracefully
-        if self._fetch_pool:
-            self._fetch_pool.shutdown(wait=False, cancel_futures=True)
-            self._fetch_pool = None
+        # Stop fetch worker
+        try:
+            self._fetch_queue.put_nowait(None)  # sentinel
+        except queue.Full:
+            pass
+        if self._fetch_thread:
+            self._fetch_thread.join(timeout=3.0)
 
     def run_tray(self, auto_show_panel: bool = True) -> None:
         """Run the system tray (blocking). Imported here to avoid circular deps."""
@@ -189,33 +195,36 @@ class StockClipper:
                 return  # too soon, skip
             self._last_fetch_time[dedup_key] = now
 
-        # Submit to fetch pool (non-blocking)
-        if self._fetch_pool:
-            self._fetch_pool.submit(self._fetch_with_status, request)
-
-    def _fetch_with_status(self, request: StockRequest) -> None:
-        """Wrapper that manages status flags around _process_request."""
-        self._fetching.set()
-        self._signal_status("fetching")
-
+        # Push to fetch queue
         try:
-            self._process_request(request)
-        except Exception as e:
-            import traceback
-            tb_lines = traceback.format_exc()
-            log.error("Fetch failed for %s: %s", request.code, e)
-            err_detail = f"{type(e).__name__}: {e}"
-            result = FetchResult(
-                code=request.code,
-                status="error",
-                period=request.period,
-                message=f"内部错误: {err_detail}",
-            )
-            self._add_history(result)
-            self._notify("处理失败", f"{request.code}: {err_detail}")
+            self._fetch_queue.put_nowait(request)
+        except queue.Full:
+            pass
 
-        self._fetching.clear()
-        self._signal_status("monitoring")
+    def _fetch_worker(self) -> None:
+        """Simple single-thread fetch worker loop."""
+        while self._running.is_set():
+            try:
+                request = self._fetch_queue.get(timeout=0.5)
+            except queue.Empty:
+                continue
+            if request is None:  # sentinel
+                break
+
+            self._fetching.set()
+            self._signal_status("fetching")
+            try:
+                self._process_request(request)
+            except Exception as e:
+                log.error("Fetch failed for %s: %s", request.code, e)
+                result = FetchResult(
+                    code=request.code, status="error",
+                    period=request.period,
+                    message=f"内部错误: {type(e).__name__}: {e}")
+                self._add_history(result)
+                self._notify("处理失败", f"{request.code}: {e}")
+            self._fetching.clear()
+            self._signal_status("monitoring")
 
     def _process_request(self, request: StockRequest) -> None:
         """Process a single stock fetch request.
@@ -479,18 +488,10 @@ class StockClipper:
         }
 
     def fetch_manual(self, code: str, period: str = "daily") -> FetchResult:
-        """Manually trigger a fetch (used by panel search box).
-
-        Args:
-            code: 6-digit stock code.
-            period: 'daily', 'weekly', or 'monthly'.
-
-        Returns:
-            FetchResult for the operation.
-        """
+        """Manually trigger a fetch (used by panel search box)."""
         request = StockRequest(code=code, period=period, save_mode=False, raw=code)
-        if self._fetch_pool:
-            self._fetch_pool.submit(self._fetch_with_status, request)
-        else:
-            return FetchResult(code=code, status="error", message="服务未启动")
+        try:
+            self._fetch_queue.put_nowait(request)
+        except queue.Full:
+            return FetchResult(code=code, status="error", message="队列已满")
         return FetchResult(code=code, status="pending", period=period, message="已加入队列")

@@ -12,8 +12,6 @@ Features:
   - Minimal, clean design
 """
 
-import threading
-import time
 from typing import Any, Callable, Dict, List, Optional
 
 from api.realtime import fetch_realtime_quotes
@@ -38,34 +36,16 @@ class MarketWatchModule(BaseModule):
         self._poll_thread: Optional[threading.Thread] = None
         self._interval = 3.0  # polling interval in seconds
 
-    # ---- Lifecycle ----
+    # ---- Lifecycle (lightweight — no background threads) ----
 
     def on_register(self, clipper) -> None:
         super().on_register(clipper)
 
     def on_start(self) -> None:
-        self._running.set()
-        self._poll_thread = threading.Thread(
-            target=self._poll_loop, daemon=True, name="market-watch"
-        )
-        self._poll_thread.start()
+        pass  # No background polling; JS polls on-demand when tab is visible
 
     def on_stop(self) -> None:
-        self._running.clear()
-        if self._poll_thread:
-            self._poll_thread.join(timeout=2.0)
-
-    # ---- Polling ----
-
-    def _poll_loop(self) -> None:
-        """Background polling loop for real-time quotes."""
-        while self._running.is_set():
-            try:
-                if self._codes:
-                    self._quotes = fetch_realtime_quotes(self._codes, timeout=3)
-            except Exception:
-                pass  # Silently retry next cycle
-            self._running.wait(self._interval)
+        pass
 
     # ---- API methods (exposed to JS) ----
 
@@ -203,11 +183,17 @@ document.addEventListener('DOMContentLoaded', function() {
     # ---- Internal API handlers ----
 
     def _api_get_quotes(self) -> Dict[str, Any]:
-        """JS: get current quotes."""
-        return {code: {"name": q.get("name", ""),
-                        "current": q.get("current", 0),
-                        "percent": q.get("percent", 0)}
-                for code, q in self._quotes.items()}
+        """JS: fetch and return current quotes on-demand."""
+        if not self._codes:
+            return {}
+        try:
+            quotes = fetch_realtime_quotes(self._codes, timeout=3)
+            return {code: {"name": q.get("name", ""),
+                           "current": q.get("current", 0),
+                           "percent": q.get("percent", 0)}
+                    for code, q in quotes.items()}
+        except Exception:
+            return {}
 
     def _api_add_code(self, code: str) -> Dict[str, Any]:
         """JS: add a stock code to watchlist."""
