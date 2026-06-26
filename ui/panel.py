@@ -36,7 +36,10 @@ PANEL_HTML = r"""
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/stock-api/dist/browser/stock-api.iife.min.js"></script>
+<script>"use strict";var StockApi=(()=>{var z=Object.defineProperty;var be=Object.getOwnPropertyDescriptor;var Pe=Object.getOwnPropertyNames;var Me=Object.prototype.hasOwnProperty;var Ke=(e,t)=>{for(var r in t)z(e,r,{get:t[r],enumerable:!0})},Ue=(e,t,r,n)=>{if(t&&typeof t=="object"||typeof t=="function")for(let o of Pe(t))!Me.call(e,o)&&o!==r&&z(e,o,{get:()=>t[o],enumerable:!(n=be(t,o))||n.enumerable});return e};var ve=e=>Ue(z({},"__esModule",{value:!0}),e);var ur={};Ke(ur,{StockApiError:()=>R,StockCodeError:()=>E,StockParseError:()=>D,StockRequestError:()=>a,default:()=>ar,stocks:()=>ee});var N="\u8BF7\u68C0\u67E5\u7EDF\u4E00\u4EE3\u7801\u662F\u5426\u6B63\u786E",te="\u672A\u5B9E\u73B0\u83B7\u53D6\u80A1\u7968\u6570\u636E",re="\u672A\u5B9E\u73B0\u83B7\u53D6\u80A1\u7968\u6570\u636E\u7EC4",ne="\u672A\u5B9E\u73B0\u83B7\u53D6 K \u7EBF\u6570\u636E",oe="\u672A\u5B9E\u73B0\u641C\u7D22\u80A1\u7968\u4EE3\u7801";var y={code:"---",name:"---",percent:0,now:0,low:0,high:0,yesterday:0};var R=class extends Error{constructor(t){super(t),this.name=new.target.name}},a=class extends R{},E=class extends R{},D=class extends R{};function O(){return!!globalThis.document}async function se(e){let r=globalThis.document,n=r?.head||r?.body||r?.documentElement;if(!r||!n)throw new a("Browser document is not available");await new Promise((o,s)=>{let i=r.createElement("script"),u=e.timeout||15e3,d=setTimeout(()=>{k(),s(new a(`Script request timed out after ${u}ms`))},u);function k(){clearTimeout(d),i.onload=null,i.onerror=null,i.parentNode?.removeChild?.(i)}i.async=!0,i.charset=e.charset||"utf-8",i.onload=()=>{k(),o()},i.onerror=()=>{k(),s(new a("Script request failed"))},i.src=e.url,n.appendChild(i)})}async function ie(e){let t=globalThis;await se(e);let r=t[e.variableName];return delete t[e.variableName],typeof r=="string"?r:""}async function ce(e){let t=globalThis,r=e.callbackParam||"callback",n=`stockApiJsonp${Date.now()}${Math.floor(Math.random()*1e5)}`,o;t[n]=s=>{o=s};try{let s=De(e.url,r,n);await se({charset:e.charset,timeout:e.timeout,url:s})}finally{delete t[n]}if(o===void 0)throw new a("JSONP response did not invoke callback");return o}function De(e,t,r){let n=e.includes("?")?"&":"?";return`${e}${n}${encodeURIComponent(t)}=${encodeURIComponent(r)}`}var Z=class{constructor(t){this.url=t;this.options={headers:{Accept:"*/*","User-Agent":"Mozilla/5.0 (compatible; stock-api/2.0)"},retries:2,timeout:15e3}}set(t,r){return this.options.headers[t]=r,this}responseType(t){return this}retries(t){return this.options.retries=t,this}timeout(t){return this.options.timeout=t,this}then(t,r){return this.send().then(t,r)}async send(){let t;for(let r=0;r<=this.options.retries;r++)try{return await Ae(this.url,this.options)}catch(n){t=n}throw t}};async function Ae(e,t){if(typeof globalThis.fetch!="function")throw new a("globalThis.fetch is not available");let r=new AbortController,n=setTimeout(()=>r.abort(),t.timeout);try{let o=await globalThis.fetch(e,{headers:He(t.headers),redirect:"follow",signal:r.signal}),s=o.status,i=await o.arrayBuffer(),u={body:i,headers:Ie(o.headers),status:s,text:new TextDecoder("utf-8").decode(i)};if(!o.ok)throw new a(`Request failed with status ${s}`);return u}catch(o){throw Be(o)?new a(`Request timed out after ${t.timeout}ms`):o}finally{clearTimeout(n)}}function He(e){let t=new Headers;for(let[r,n]of Object.entries(e))Fe(r)||t.set(r,n);return t}function Ie(e){let t={};return e.forEach((r,n)=>{t[n]=r}),t}function Fe(e){return qe()?["referer","user-agent"].includes(e.toLowerCase()):!1}function qe(){return"window"in globalThis&&"document"in globalThis}function Be(e){return e instanceof DOMException&&e.name==="AbortError"}var $e={get(e){return new Z(e)}},w=$e;var c={supported:!0},ae={supported:!1,note:"Sina requires a valid Referer that browser JavaScript cannot set. Use stocks.auto, Node.js, or a backend proxy."},pe={eastmoney:{browser:{kline:c,quote:c,search:c},node:{kline:c,quote:c,search:c},source:"eastmoney"},sina:{browser:{kline:c,quote:ae,search:ae},node:{kline:c,quote:c,search:c},source:"sina"},tencent:{browser:{kline:c,quote:c,search:c},node:{kline:c,quote:c,search:c},source:"tencent"}};function me(){return Object.values(pe).map(e=>({browser:ue(e.browser),node:ue(e.node),source:e.source}))}function g(e,t){let r=O()?"browser":"node",n=pe[e][r][t];if(!n.supported)throw new a(`${e} ${t} is not available in ${r}. ${n.note||""}`.trim())}function ue(e){return{kline:{...e.kline},quote:{...e.quote},search:{...e.search}}}var A={adjust:"none",count:120,period:"day"};function _(e={}){return{adjust:je(e.adjust),count:ze(e.count),period:Le(e.period)}}function M(e){let t=Number(e);return Number.isFinite(t)?t:0}function T(e){let t={close:M(e.close),date:e.date,high:M(e.high),low:M(e.low),open:M(e.open),source:e.source};return e.volume!==void 0&&(t.volume=M(e.volume)),t}function Le(e){return e||A.period}function je(e){return e||A.adjust}function ze(e){return e===void 0||!Number.isFinite(e)||e<=0?A.count:Math.floor(e)}function de(e){return Array.from(new Set(e))}function Ze(e){return e.toLowerCase()==="gbk"?"gb18030":e}var Qe={decode(e,t){return new TextDecoder(Ze(t)).decode(e)}},le=Qe;function K(e,t){return{...e,source:t}}function h(e){return de(e.filter(t=>t!==""))}function ge(e){return{...y,code:e}}function Ge(e){return e.split(`;
+`).filter(t=>t!=="")}function Q(e){let[,t=""]=e.split("=");return t}function Je(e,t){return Q(e).replace('"',"").split(t)}function H(e){async function t(o){let s=h(o);if(s.length===0)return[];g(e.source,"quote");let i=e.quote.codeTransform.transforms(s),u=await r(e.quote,i),d=Ge(u);return s.map((k,v)=>{let x=i[v],C=d.find(j=>j.includes(x))||"";if(e.quote.isMissing(C,x))return ge(k);let P=Je(C,e.quote.delimiter);return e.quote.parseStock(k,P)})}async function r(o,s){return O()&&o.browserRequestText?o.browserRequestText(s):fe({encoding:o.encoding,headers:o.headers,url:o.getUrl(s)})}let n={async getStock(o){let[s]=await t([o]);return s||ge(o)},getStocks:t,getKlines(o,s){return e.kline.getKlines(o,s)},async searchStocks(o){g(e.source,"search");let s=await Ve(e.search,o);return t(e.search.parseCodes(s))},async inspectStock(o){return G(e.source,o,n.getStock)}};return n}async function Ve(e,t){return O()&&e.browserRequestText?e.browserRequestText(t):fe({encoding:e.encoding,headers:e.headers,url:e.getUrl(t)})}async function G(e,t,r){try{let n=K(await r(t),e);return{code:t,source:e,status:Ye(n)?"success":"empty",stock:n}}catch(n){return{code:t,source:e,status:"error",error:We(n)}}}function Ye(e){return!!(e&&e.name!==y.name)}function We(e){return e instanceof Error?e.message:String(e)}async function fe(e){let t=w.get(e.url).responseType("blob");for(let[n,o]of e.headers||[])t.set(n,o);let r=await t;return le.decode(r.body,e.encoding)}function Se(e){let t=String(e).toUpperCase();if(t.startsWith("SH"))return`1.${t.slice("SH".length)}`;if(t.startsWith("SZ"))return`0.${t.slice("SZ".length)}`;throw new E(N)}var Xe={transform:Se,transforms(e){return e.map(Se)}},J=Xe;function ke(e,t){let r=rt(t),n=st(t),o=U(t?.f170??t?.f3);return{code:et(e),name:tt(t),percent:o?o/100:r&&n?r/n-1:0,now:r,low:nt(t),high:ot(t),yesterday:n}}function et(e){return String(e).toUpperCase()}function tt(e){return String(e?.f58||e?.f14||"---")}function rt(e){return U(e?.f43??e?.f2)}function nt(e){return U(e?.f45??e?.f16)}function ot(e){return U(e?.f44??e?.f15)}function st(e){return U(e?.f60??e?.f18)}function U(e){if(e==null||e==="-")return 0;let t=Number(e);return Number.isFinite(t)?t:0}var it="f43,f44,f45,f57,f58,f60,f170",ct="f51,f52,f53,f54,f55,f56",at="D43BF722C8E33BDC906FB84D85E326E8",ut=4e3,pt="push2delay.eastmoney.com",Ee="push2his.eastmoney.com",mt=[Ee,"7.push2his.eastmoney.com","33.push2his.eastmoney.com","63.push2his.eastmoney.com","91.push2his.eastmoney.com"];function dt(e){return`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(e)}&type=14&token=${at}`}async function V(e){let t=h(e);return t.length===0?[]:(g("eastmoney","quote"),Promise.all(t.map(gt)))}var he={async getStock(e){let[t]=await V([e]);return t||ye(e)},getStocks:V,async getKlines(e,t){return lt(e,t)},async searchStocks(e){g("eastmoney","search");let r=((await Et(e)).QuotationCodeTable?.Data||[]).map(ht).filter(Boolean);return V(r)},async inspectStock(e){return G("eastmoney",e,he.getStock)}};async function lt(e,t){g("eastmoney","kline");let r=_(t),n=J.transform(e),o=`https://${Ee}/api/qt/stock/kline/get?fields1=f1,f2,f3,f4,f5,f6&fields2=${ct}&ut=7eea3edcaed734bea9cbfc24409ed989&klt=${St(r.period)}&fqt=${kt(r.adjust)}&secid=${encodeURIComponent(n)}&beg=19700101&end=20500101&lmt=${r.count}`;return((await yt(o,mt)).data?.klines||[]).map(u=>{let[d,k,v,x,C,P]=u.split(",");return T({close:v,date:d,high:x,low:C,open:k,source:"eastmoney",volume:P})})}async function gt(e){let t=J.transform(e),r=`https://${pt}/api/qt/stock/get?fltt=2&invt=2&secid=${encodeURIComponent(t)}&fields=${it}`,n=await ft(r);return!n?.f57&&!n?.f58?ye(e):ke(e,n)}async function ft(e){let r=(await Y(e,1)).data;if(r?.f57||r?.f58)return r}async function Y(e,t=0){let r;for(let n=0;n<=t;n++)try{let o=await w.get(e).set("Accept","application/json,text/plain,*/*").set("Referer","https://quote.eastmoney.com/").retries(0).timeout(ut);return JSON.parse(o.text)}catch(o){r=o}throw r}function St(e){switch(e){case"week":return"102";case"month":return"103";default:return"101"}}function kt(e){switch(e){case"qfq":return"1";case"hfq":return"2";default:return"0"}}async function Et(e){let t=dt(e);return O()?ce({callbackParam:"cb",url:t}):Y(t,1)}function ht(e){let t=e.QuoteID||"",r=e.Code||t.split(".")[1]||"",n=e.MktNum||t.split(".")[0]||"";return r?n==="1"?`SH${r}`:n==="0"?`SZ${r}`:"":""}function ye(e){return{...y,code:e}}async function yt(e,t){let r;for(let n of t)try{return await Y(wt(e,n))}catch(o){r=o}throw r}function wt(e,t){let r=new URL(e);return r.hostname=t,r.toString()}var I=he;var Rt={SH:{name:0,now:3,low:5,high:4,yesterday:2},SZ:{name:0,now:3,low:5,high:4,yesterday:2},HK:{name:1,now:6,low:5,high:4,yesterday:3},US:{name:0,now:1,low:7,high:6,yesterday:26}};function we(e,t){let r=Rt[e.slice(0,2)],n=r?F(t,r.now):0,o=r?F(t,r.yesterday):0;return{code:String(e).toUpperCase(),name:r?Ot(t,r.name):"---",percent:n?n/o-1:0,now:n,low:r?F(t,r.low):0,high:r?F(t,r.high):0,yesterday:o}}function F(e,t){return Number(e[t]||0)}function Ot(e,t){return String(e[t]||"---")}function q(e){function t(n,o){let s=e.inputPrefixes[n];if(o.indexOf(s)!==0)throw new E(e.marketErrors?.[n]||e.unknownError);let i=o.replace(s,""),u=e.formatOutputCode?e.formatOutputCode(n,i):i;return e.outputPrefixes[n]+u}let r={transform(n){let o=xt(n,e.inputPrefixes);if(!o)throw new E(e.unknownError);return t(o,n)},transforms(n){return n.map(o=>r.transform(o))},SZTransform(n){return t("SZ",n)},SHTransform(n){return t("SH",n)},HKTransform(n){return t("HK",n)},USTransform(n){return t("US",n)}};return r}function xt(e,t){return Object.keys(t).find(r=>e.startsWith(t[r]))}var bt=q({inputPrefixes:{SZ:"SZ",SH:"SH",HK:"HK",US:"US"},outputPrefixes:{SZ:"sz",SH:"sh",HK:"hk",US:"gb_"},unknownError:N,formatOutputCode(e,t){return e==="US"?t.toLowerCase():t}}),W=bt;var Re=[["Referer","https://finance.sina.com.cn/"]];function Pt(e){return`https://hq.sinajs.cn/list=${e.join(",")}`}function Mt(e){return`https://suggest3.sinajs.cn/suggest/type=2&key=${encodeURIComponent(e)}`}function Kt(e,t){return`https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketData.getKLineData?symbol=${e}&scale=${Dt(t.period)}&ma=no&datalen=${t.count}`}async function Ut(e,t){g("sina","kline");let r=_(t);if(r.adjust!=="none")return[];let n=W.transform(e),o=await vt(Kt(n,r));return Array.isArray(o)?o.map(s=>T({close:s.close,date:s.day||"",high:s.high,low:s.low,open:s.open,source:"sina",volume:s.volume})):[]}async function vt(e){let t=await w.get(e).set("Accept","application/json,text/plain,*/*").set("Referer","https://finance.sina.com.cn/");return JSON.parse(t.text)}function Dt(e){switch(e){case"week":return"1200";case"month":return"7200";default:return"240"}}var At=H({kline:{getKlines:Ut},source:"sina",quote:{codeTransform:W,delimiter:",",encoding:"gb18030",headers:Re,getUrl(e){return Pt(e)},isMissing(e){return Q(e)==='""'},parseStock(e,t){return we(e,t)}},search:{encoding:"gb18030",headers:Re,getUrl(e){return Mt(e)},parseCodes(e){let r=e.replace('var suggestvalue="',"").replace('";',"").split(";").flatMap(n=>{let o=n.split(",")[0];if(o.indexOf("us")===0)return["US"+o.replace("us","")];if(o.indexOf("sz")===0)return["SZ"+o.replace("sz","")];if(o.indexOf("sh")===0)return["SH"+o.replace("sh","")];if(o.indexOf("hk")===0)return["HK"+o.replace("hk","")];if(o.indexOf("of")===0){let s=o.replace("of","");return["SZ"+s,"SH"+s]}return[]});return h(r)}}}),B=At;function Oe(e,t){let r=Ft(t),n=$t(t);return{code:Ht(e),name:It(t),percent:r?r/n-1:0,now:r,low:qt(t),high:Bt(t),yesterday:n}}function Ht(e){return String(e).toUpperCase()}function It(e){return String(e[1]||"---")}function Ft(e){return $(e,3)}function qt(e){return $(e,34)}function Bt(e){return $(e,33)}function $t(e){return $(e,4)}function $(e,t){return Number(e[t]||0)}var Qt=q({inputPrefixes:{SZ:"SZ",SH:"SH",HK:"HK",US:"US"},outputPrefixes:{SZ:"sz",SH:"sh",HK:"hk",US:"us"},unknownError:N,formatOutputCode(e,t){return e==="HK"||e==="US"?t.toUpperCase():t}}),X=Qt;function xe(e){return`https://smartbox.gtimg.cn/s3/?v=2&t=all&c=1&q=${encodeURIComponent(e)}`}async function Gt(e){return`v_hint="${await ie({charset:"gbk",url:xe(e),variableName:"v_hint"})}"`}async function Jt(e,t){g("tencent","kline");let r=_(t),n=X.transform(e),o=r.adjust==="none"?"kline/kline":"fqkline/get",i=`${r.adjust==="none"?"":r.adjust}${r.period}`,u=r.adjust==="none"?"":`,${r.adjust}`,d=`https://web.ifzq.gtimg.cn/appstock/app/${o}?param=${n},${r.period},,,${r.count}${u}`;return((await Vt(d)).data?.[n]?.[i]||[]).map(([x,C,P,j,_e,Te])=>T({close:P,date:x,high:j,low:_e,open:C,source:"tencent",volume:Te}))}async function Vt(e){let t=await w.get(e).set("Accept","application/json,text/plain,*/*");return JSON.parse(t.text)}var Yt=H({kline:{getKlines:Jt},source:"tencent",quote:{codeTransform:X,delimiter:"~",encoding:"gbk",getUrl(e){return`https://qt.gtimg.cn/q=${e.join(",")}`},isMissing(e,t){return!e.includes(t)},parseStock(e,t){return Oe(e,t)}},search:{browserRequestText:Gt,encoding:"gbk",getUrl(e){return xe(e)},parseCodes(e){let r=e.replace('v_hint="',"").replace('"',"").split("^").map(n=>{let[o,s]=n.split("~");switch(o){case"sz":return"SZ"+s;case"sh":return"SH"+s;case"hk":return"HK"+s;case"us":return"US"+s.split(".")[0].toUpperCase();default:return""}});return h(r)}}}),L=Yt;var Wt=[{name:"tencent",api:L},{name:"sina",api:B},{name:"eastmoney",api:I}];function Xt(e){let t={async getStock(r){return(await t.inspectStock(r)).stock},async getStocks(r){return Promise.all(h(r).map(n=>t.getStock(n)))},async getKlines(r,n){for(let o of tr(e)){let s=await rr(o,r,n);if(s.length>0)return s}return[]},async searchStocks(r){for(let n of e){let s=(await nr(n,r)).filter(or);if(s.length>0)return s.map(i=>K(i,n.name))}return[]},async inspectStock(r){let n=[],o,s="base";for(let u of e){let d=await u.api.inspectStock(r);n.push(d),!o&&d.status==="success"&&d.stock&&(o=d.stock,s=d.source)}let i=o||K({...y,code:r},"base");return{code:r,source:s,stock:i,sources:n}}};return t}var er=Xt(Wt);function tr(e){let t=new Map([["tencent",0],["sina",1],["eastmoney",2]]);return[...e].sort((r,n)=>(t.get(r.name)??Number.MAX_SAFE_INTEGER)-(t.get(n.name)??Number.MAX_SAFE_INTEGER))}async function rr(e,t,r){try{return await e.api.getKlines(t,r)}catch{return[]}}async function nr(e,t){try{return await e.api.searchStocks(t)}catch{return[]}}function or(e){return!!(e&&e.name!==y.name)}var Ce=er;var sr={async getStock(e){throw new Error(te)},async getStocks(e){throw new Error(re)},async getKlines(e,t){throw new Error(ne)},async searchStocks(e){throw new Error(oe)}},Ne=sr;var ir=["tencent","sina","eastmoney"];function cr(){return[...ir]}var ee={auto:Ce,base:Ne,eastmoney:I,getProviderCapabilities:me,getSources:cr,sina:B,tencent:L};var ar={stocks:ee};return ve(ur);})();
+//# sourceMappingURL=stock-api.iife.min.js.map
+</script>
 <style>
   :root {
     --bg: #0b0e11;
@@ -450,28 +453,6 @@ PANEL_HTML = r"""
     font-size: 10px; padding: 10px 8px; opacity: 0.4;
     letter-spacing: 0.2px;
   }
-  /* Market Watch (baked inline) */
-  .mw-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); margin-bottom: 4px; background: var(--surface); border: 1px solid var(--border); }
-  .mw-row.mw-up { border-left: 3px solid #ff6b6b; }
-  .mw-row.mw-down { border-left: 3px solid #4ddf7c; }
-  .mw-row.mw-flat { border-left: 3px solid var(--text3); }
-  .mw-info { flex: 1; min-width: 0; }
-  .mw-code { font-weight: 700; color: var(--text1); font-size: 12px; font-family: var(--font-mono); }
-  .mw-name { color: var(--text2); font-size: 10px; margin-left: 6px; }
-  .mw-price { font-weight: 700; font-size: 14px; font-family: var(--font-mono); text-align: right; min-width: 60px; }
-  .mw-up .mw-price { color: #ff6b6b; }
-  .mw-down .mw-price { color: #4ddf7c; }
-  .mw-change { font-size: 12px; font-family: var(--font-mono); text-align: right; min-width: 70px; font-weight: 600; }
-  .mw-up .mw-change { color: #ff6b6b; }
-  .mw-down .mw-change { color: #4ddf7c; }
-  .mw-remove { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 0 2px; }
-  .mw-remove:hover { color: var(--red); }
-  .mw-empty { text-align: center; padding: 20px 10px; color: var(--text3); font-size: 12px; }
-  .mw-add-row { display: flex; gap: 6px; margin-top: 8px; }
-  .mw-add-row input { flex: 1; background: var(--surface); color: var(--text1); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 8px; font-size: 12px; font-family: var(--font-mono); outline: none; }
-  .mw-add-row input:focus { border-color: var(--blue); }
-  .mw-add-row button { background: var(--blue); color: #fff; border: none; border-radius: var(--radius-sm); padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-  .mw-hint { font-size: 9px; color: var(--text3); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -524,8 +505,6 @@ PANEL_HTML = r"""
 <div class="tabs">
   <button class="tab-btn active" data-tab="data">📊 数据查询</button>
   <button class="tab-btn" data-tab="settings">⚙️ 设置</button>
-  <button class="tab-btn" data-tab="formula">🤖 AI分析</button>
-  <button class="tab-btn" data-tab="watch">👁 盯盘</button>
 </div>
 
 <!-- ====== Tab: 数据查询 ====== -->
@@ -544,6 +523,14 @@ PANEL_HTML = r"""
       <div id="chartContainer" style="margin-bottom:10px;overflow-x:auto;"></div>
       <table class="ind-table" id="rcIndicators"></table>
 
+      <hr style="border-color:var(--border);margin:12px 0;">
+      <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">🤖 AI分析（可选）</div>
+      <textarea id="formulaInput" placeholder="粘贴通达信选股公式（可选）&#10;例: CROSS(MA(C,5),MA(C,20)) AND RSI(6)>50" style="min-height:60px;"></textarea>
+      <div class="card-actions" style="margin-top:6px;">
+        <button onclick="onGeneratePrompt()">✨ 生成分析提示词</button>
+        <button onclick="onQuickAnalyze()">📊 快速技术分析</button>
+        <button onclick="document.getElementById('formulaInput').value=''" style="font-size:10px;">清空</button>
+      </div>
       <div class="card-actions">
         <button class="btn-primary" onclick="onCopyJSON()">📋 复制完整JSON</button>
         <button onclick="onCopyPrompt()">🤖 生成AI分析提示词</button>
@@ -646,26 +633,6 @@ PANEL_HTML = r"""
   </div>
 </div>
 
-<!-- ====== Tab: 盯盘 ====== -->
-<div class="tab-content" id="tab-watch">
-  <div class="main-area">
-    <div class="card" style="margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:6px;">📡 实时行情</div>
-      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;">
-        数据源: 新浪财经 · 每3秒刷新 · 仅交易时段有效
-      </div>
-      <div id="mwQuotes">
-        <div class="mw-empty">加载中...</div>
-      </div>
-      <div class="mw-add-row">
-        <input type="text" id="mwAddInput" placeholder="输入6位代码, 如 000001" maxlength="6"
-               onkeydown="if(event.key==='Enter')mwAddCode()">
-        <button onclick="mwAddCode()">+ 添加</button>
-      </div>
-      <div class="mw-hint">支持最多6只股票 · 点击 × 移除</div>
-    </div>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 <div class="footer">Stock JSON Clipper V3.0 · GPL-3.0 · 数据来源: 腾讯财经/新浪财经/东方财富</div>
@@ -723,11 +690,6 @@ window.addEventListener('unhandledrejection', function(e) {
 // ============================================================
 // Search
 // ============================================================
-function onSearch() {
-  var input = document.getElementById('searchInput');
-  var code = input.value.trim();
-  if (!code) { showToast('请输入股票代码（6位数字）'); return; }
-
 function toStockApiCode(raw) {
   var c = raw.trim().toUpperCase().replace(/[#WM:]/g, '');
   // Already has prefix
@@ -745,48 +707,43 @@ function onSearch() {
   if (!raw) { showToast('请输入股票代码'); return; }
 
   var code = toStockApiCode(raw);
-  if (!code) { showToast('无效代码，支持: 000001 / SH600519 / HK00700'); return; }
+  if (!code) { showToast('无效代码。支持: 000001 / SH600519 / HK00700'); return; }
 
   var period = document.getElementById('searchPeriod').value;
-  var btn = document.getElementById('searchBtn');
-  btn.disabled = true; btn.textContent = '查询中…';
-  var dot = document.getElementById('statusDot');
-  dot.className = 'status-dot fetching';
-  document.getElementById('statusText').textContent = '正在拉取 ' + code + '…';
-
-  // stock-api period mapping
   var sp = {daily:'day', weekly:'week', monthly:'month'};
   var kp = sp[period] || 'day';
+  var btn = document.getElementById('searchBtn');
+  btn.disabled = true; btn.textContent = '查询中…';
 
-  Promise.all([
-    StockApi.stocks.auto.getKlines(code, {period: kp, count: 250}),
-    StockApi.stocks.auto.getStock(code)
-  ]).then(function(results) {
-    var klines = results[0], stock = results[1];
-    // Send to Python for indicator calculation
-    pywebview.api.compute_indicators(code, klines, {
-      name: stock.name, now: stock.now, percent: stock.percent,
-      high: stock.high, low: stock.low, yesterday: stock.yesterday,
-      source: stock.source
-    }).then(function(detail) {
-      window._currentResult = detail;
-      renderResultCard(detail);
-      renderChart(klines, period);
-      document.getElementById('statusText').textContent = code + ' ' + stock.name + ' | 数据源: ' + (stock.source || 'auto');
-      dot.className = 'status-dot on';
-      btn.disabled = false; btn.textContent = '查询';
-      showToast('已加载 ' + klines.length + ' 条K线');
+  document.getElementById('statusDot').className = 'status-dot fetching';
+  document.getElementById('statusText').textContent = '正在拉取 ' + code + '…';
+
+  try {
+    Promise.all([
+      StockApi.stocks.auto.getKlines(code, {period: kp, count: 250}),
+      StockApi.stocks.auto.getStock(code)
+    ]).then(function(results) {
+      var klines = results[0], stock = results[1];
+      pywebview.api.compute_indicators(code, klines, {
+        name: stock.name, now: stock.now, percent: stock.percent,
+        high: stock.high, low: stock.low, yesterday: stock.yesterday
+      }).then(function(detail) {
+        window._currentResult = detail;
+        renderResultCard(detail);
+        renderChart(klines);
+        document.getElementById('statusText').textContent = stock.name + ' | ' + klines.length + '条';
+        document.getElementById('statusDot').className = 'status-dot on';
+        btn.disabled = false; btn.textContent = '查询';
+      });
     }).catch(function(e) {
-      window._showError('计算失败', String(e));
+      window._showError('查询失败', (e && e.message) || String(e));
       btn.disabled = false; btn.textContent = '查询';
-      dot.className = 'status-dot on';
+      document.getElementById('statusDot').className = 'status-dot on';
     });
-  }).catch(function(e) {
-    window._showError('查询失败', (e && e.message) || String(e));
+  } catch(e) {
+    window._showError('StockApi未加载', '请确认网络连接，stock-api需要首次加载');
     btn.disabled = false; btn.textContent = '查询';
-    dot.className = 'status-dot on';
-    document.getElementById('statusText').textContent = '查询失败 — 请检查代码或网络';
-  });
+  }
 }
 
 // ============================================================
@@ -1034,32 +991,9 @@ function refreshHistory() {
 }
 
 function refreshStatus() {
-  pywebview.api.get_status().then(function(status) {
-    var dot = document.getElementById('statusDot');
-    var text = document.getElementById('statusText');
-    if (status === 'fetching') {
-      dot.className = 'status-dot fetching';
-      text.textContent = '正在拉取数据… 请稍候';
-    } else {
-      pywebview.api.is_monitoring().then(function(on) {
-        if (on) {
-          dot.className = 'status-dot on';
-          text.textContent = '剪贴板监控运行中 — 在股票软件复制代码即可自动识别';
-        } else {
-          dot.className = 'status-dot off';
-          text.textContent = '剪贴板监控已暂停 — 可使用上方搜索框手动查询';
-        }
-      });
-    }
-  });
-  if (!window._pollFast) {
-    pywebview.api.get_last_result_detail().then(function(detail) {
-      if (detail && detail.meta && detail.meta.code) {
-        window._currentResult = detail;
-        renderResultCard(detail);
-      }
-    });
-  }
+  var dot = document.getElementById('statusDot');
+  dot.className = 'status-dot on';
+  document.getElementById('statusText').textContent = 'stock-api ready | 输入代码查询';
 }
 
 function loadConfig() {
@@ -1189,56 +1123,6 @@ function _api(method) {
 })();
 
 // ============================================================
-// Market Watch — baked inline (was module JS)
-// ============================================================
-var _mwTimer = null;
-function mwRefresh() {
-  var c = document.getElementById('mwQuotes');
-  if (!c) return;
-  pywebview.api.mw_get_quotes().then(function(data) {
-    if (!data || !Object.keys(data).length) {
-      // Check if we have watchlist items — if so, likely non-trading hours
-      pywebview.api.mw_get_codes().then(function(codes) {
-        if (codes && codes.length) {
-          c.innerHTML = '<div class="mw-empty">⏸ 非交易时段<br><span style="font-size:10px;color:var(--text3)">已添加 ' + codes.length + ' 只股票，等待开盘</span></div>';
-        } else {
-          c.innerHTML = '<div class="mw-empty">暂无自选股<br><span style="font-size:10px;color:var(--text3)">下方添加代码开始盯盘</span></div>';
-        }
-      }).catch(function() {
-        c.innerHTML = '<div class="mw-empty">暂无自选股<br><span style="font-size:10px;color:var(--text3)">下方添加代码开始盯盘</span></div>';
-      });
-      return;
-    }
-    var codes = Object.keys(data).sort();
-    var h = '';
-    for (var i = 0; i < codes.length; i++) {
-      var q = data[codes[i]], up = q.percent > 0, dn = q.percent < 0;
-      var cls = up ? 'mw-up' : (dn ? 'mw-down' : 'mw-flat');
-      h += '<div class="mw-row ' + cls + '">';
-      h += '<div class="mw-info"><span class="mw-code">' + codes[i] + '</span><span class="mw-name">' + (q.name || '--') + '</span></div>';
-      h += '<div class="mw-price">' + (q.current ? q.current.toFixed(2) : '--') + '</div>';
-      h += '<div class="mw-change">' + (up ? '▲' : (dn ? '▼' : '—')) + ' ' + (q.percent ? q.percent.toFixed(2) : '0.00') + '%</div>';
-      h += '<button class="mw-remove" onclick="event.stopPropagation();pywebview.api.mw_remove_code(\'' + codes[i] + '\').then(function(){mwRefresh();})">&times;</button>';
-      h += '</div>';
-    }
-    c.innerHTML = h;
-  }).catch(function() {
-    c.innerHTML = '<div class="mw-empty">⏸ 非交易时段<br><span style="font-size:10px;color:var(--text3)">数据源暂无响应</span></div>';
-  });
-}
-function mwAddCode() {
-  var v = document.getElementById('mwAddInput').value.trim().replace(/[#WM:]/g, '');
-  if (!/^\d{6}$/.test(v)) return;
-  pywebview.api.mw_add_code(v).then(function(r) {
-    if (r && r.success) { document.getElementById('mwAddInput').value = ''; mwRefresh(); }
-  });
-}
-// Poll watch when tab is visible
-setInterval(function() {
-  var tab = document.getElementById('tab-watch');
-  if (tab && tab.classList.contains('active')) mwRefresh();
-}, 2500);
-setTimeout(mwRefresh, 800);
 </script>
 </body>
 </html>
@@ -1249,38 +1133,36 @@ setTimeout(mwRefresh, 800);
 # Python-side API exposed to JS
 # ============================================================
 class PanelAPI:
-    """API class exposed to the PyWebView JavaScript context.
-
-    Core methods (get_history, search_stock, etc.) are defined directly.
-    Feature module methods are dynamically attached from the module registry
-    — no hardcoded module imports needed.
-    """
+    """API class exposed to the PyWebView JavaScript context."""
 
     def __init__(self, clipper: "StockClipper") -> None:
         self._clipper = clipper
-        # Dynamically attach module API methods from registry
-        for name, func in clipper.registry.get_all_api_methods().items():
-            setattr(self, name, func)
+        self._last_json: str = ""
+        self._last_result: Dict[str, Any] = {}
+        self._search_history: list = []  # [{time, code, name, status, period, message}]
 
     def ping(self) -> str:
-        """Diagnostic: verify JS↔Python bridge works."""
         return "pong"
 
     def compute_indicators(self, code: str, klines: List[Dict], stock_info: Dict) -> Dict[str, Any]:
         """JS→Python: compute technical indicators from stock-api kline data."""
         from data.indicators import calc_all_indicators
         from data.builder import build_summary
-        from api.client import _market_label
+
+        # Market label
+        raw = code.replace("SH","").replace("SZ","").replace("HK","")
+        market = "沪市" if (raw.startswith("60") or raw.startswith("68")) else "深市"
+        if code.startswith("HK"): market = "港股"
 
         closes = [k.get("close", 0) for k in klines]
         indicators = calc_all_indicators(closes)
         summary = build_summary(klines)
 
-        return {
+        result = {
             "meta": {
                 "code": code,
                 "name": stock_info.get("name", ""),
-                "market": _market_label(code.replace("SH","").replace("SZ","").replace("HK","") or "000001"),
+                "market": market,
                 "industry": "",
                 "pe_ttm": -1,
                 "total_mv": -1,
@@ -1291,10 +1173,25 @@ class PanelAPI:
             },
             "indicators": indicators,
             "summary": summary,
+            "data": klines,
         }
+        # Cache for copy/save
+        import json as _json
+        self._last_json = _json.dumps(result, ensure_ascii=False, indent=2)
+        self._last_result = result
+        # Track history
+        import time as _time
+        self._search_history.insert(0, {
+            "time": _time.strftime("%H:%M:%S"), "code": code,
+            "name": stock_info.get("name", ""), "status": "success",
+            "period": "daily", "message": f"{len(klines)}条",
+        })
+        if len(self._search_history) > 10:
+            self._search_history.pop()
+        return result
 
     def get_history(self) -> List[Dict[str, Any]]:
-        return self._clipper.get_history()
+        return self._search_history
 
     def get_config(self) -> Dict[str, Any]:
         cfg = self._clipper.get_config()
@@ -1327,9 +1224,8 @@ class PanelAPI:
     def search_stock(self, code: str, period: str = "daily", save_mode: bool = False) -> Dict[str, Any]:
         import os, time as _time
         try:
-            from core.clipboard import parse_clipboard
             code = code.strip()
-            request = parse_clipboard(code)
+            request = None  # clipboard parsing removed in V3.0
             if request:
                 actual_code, actual_period, actual_save = request.code, request.period, request.save_mode
             else:
@@ -1344,10 +1240,8 @@ class PanelAPI:
             result = self._clipper.fetch_manual(actual_code, actual_period)
 
             if actual_save:
-                from core.clipboard import StockRequest
                 try:
-                    self._clipper._fetch_queue.put_nowait(
-                        StockRequest(code=actual_code, period=actual_period, save_mode=True, raw=code))
+                    self._clipper._fetch_queue.put_nowait(None)
                 except Exception:
                     pass
 
@@ -1365,47 +1259,59 @@ class PanelAPI:
             }
 
     def copy_last_json(self) -> Dict[str, Any]:
-        import pyperclip, traceback
+        import pyperclip
+        if not self._last_json:
+            return {"success": False, "error": "暂无数据，请先查询"}
+        pyperclip.copy(self._last_json)
+        return {"success": True}
+
+    def generate_prompt(self, formula_text: str) -> Dict[str, Any]:
+        import traceback, pyperclip
         try:
-            last = self._clipper.get_last_result()
-            if last is None:
-                return {"success": False, "error": "暂无数据"}
-            cache_key = last.cache_key or self._clipper._cache.make_key(
-                last.code, last.period, self._clipper._config.get("default_count", 250))
-            cached_json = self._clipper._cache.get(cache_key)
-            if cached_json:
-                pyperclip.copy(cached_json)
-                return {"success": True}
-            return {"success": False, "error": "缓存已过期，请重新查询"}
+            if not self._last_result or not self._last_result.get("meta", {}).get("code"):
+                return {"success": False, "error": "暂无股票数据，请先查询"}
+            from modules.prompt.formula import generate_prompt as _gen
+            m = self._last_result["meta"]
+            prompt = _gen(formula=formula_text, stock_code=m["code"], stock_name=m.get("name",""),
+                          indicators=self._last_result.get("indicators",{}),
+                          summary=self._last_result.get("summary",{}))
+            pyperclip.copy(prompt)
+            return {"success": True}
+        except Exception as e:
+            return {"success": False, "error": str(e), "detail": traceback.format_exc()}
+
+    def quick_analysis_prompt(self) -> Dict[str, Any]:
+        import traceback, pyperclip
+        try:
+            if not self._last_result or not self._last_result.get("meta", {}).get("code"):
+                return {"success": False, "error": "暂无股票数据，请先查询"}
+            from modules.prompt.formula import generate_quick_prompt
+            m = self._last_result["meta"]
+            prompt = generate_quick_prompt(code=m["code"], name=m.get("name",""),
+                                           indicators=self._last_result.get("indicators",{}),
+                                           summary=self._last_result.get("summary",{}))
+            pyperclip.copy(prompt)
+            return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e), "detail": traceback.format_exc()}
 
     def save_last_to_file(self) -> Dict[str, Any]:
-        import traceback
+        if not self._last_json or not self._last_result:
+            return {"success": False, "error": "暂无数据，请先查询"}
         try:
-            last = self._clipper.get_last_result()
-            if last is None:
-                return {"success": False, "error": "暂无数据"}
-            cache_key = last.cache_key or self._clipper._cache.make_key(
-                last.code, last.period, self._clipper._config.get("default_count", 250))
-            cached_json = self._clipper._cache.get(cache_key)
-            if not cached_json:
-                return {"success": False, "error": "缓存已过期，请重新查询"}
-            data = json.loads(cached_json)
-            name = data["meta"].get("name", "未知")
+            m = self._last_result["meta"]
+            name = m.get("name", "未知")
             safe_name = name.replace("/", "_").replace("\\", "_").replace(" ", "")
             date_str = time.strftime("%Y%m%d")
-            filename = f"{last.code}_{safe_name}_{date_str}.json"
+            filename = f"{m['code']}_{safe_name}_{date_str}.json"
             save_dir = self._clipper._config.get("save_directory", "")
-            if save_dir and os.path.isdir(save_dir):
-                filepath = os.path.join(save_dir, filename)
-            else:
-                filepath = os.path.join(os.getcwd(), filename)
+            filepath = os.path.join(save_dir if (save_dir and os.path.isdir(save_dir)) else os.getcwd(), filename)
             os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
             with open(filepath, "w", encoding="utf-8") as f:
-                f.write(cached_json)
+                f.write(self._last_json)
             return {"success": True, "filename": filename}
         except Exception as e:
+            import traceback
             return {"success": False, "error": str(e), "detail": traceback.format_exc()}
 
 # ============================================================

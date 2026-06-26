@@ -45,6 +45,17 @@ class StockClipper:
         else:
             update_config(key, value)
 
+    # Stubs for panel compatibility
+    _fetch_queue = None  # dummy for search_stock save mode
+    def fetch_manual(self, code, period="daily"): return None
+    def get_history(self) -> list: return []
+    def get_result_detail(self) -> dict: return None
+    def get_last_result_detail(self) -> dict: return None
+    def get_last_result(self): return None
+    def get_status(self) -> str: return "monitoring"
+    def is_monitoring(self) -> bool: return True
+    def toggle_clipboard_monitor(self) -> bool: return True
+
     # Cache
     def clear_cache(self) -> None:
         self._cache.clear()

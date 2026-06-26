@@ -83,8 +83,7 @@ def build_json(
     Returns:
         Full output dict matching the spec §4.3 JSON structure.
     """
-    from api.client import _market_label
-    market_info = _market_label(code)
+    market_info = "沪市" if code.startswith(("60", "68")) else "深市"
 
     # Dates
     start_date = kline_data[0].get("date", "") if kline_data else ""
