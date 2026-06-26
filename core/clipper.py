@@ -23,11 +23,18 @@ class StockClipper:
         self._config = load_config(config_path) if config_path else load_config()
         self.registry = ModuleRegistry()
         self._cache = CacheManager(ttl=self._config.get("cache_ttl", 300.0))
+        self._icon = None
+        self._alert_engine = None
 
     def start(self) -> None:
         self.registry.start_all()
+        from core.alert_engine import AlertEngine
+        self._alert_engine = AlertEngine(self)
+        self._alert_engine.start()
 
     def stop(self) -> None:
+        if self._alert_engine:
+            self._alert_engine.stop()
         self.registry.stop_all()
 
     def run_tray(self, auto_show_panel: bool = True) -> None:

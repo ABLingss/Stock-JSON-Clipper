@@ -605,6 +605,54 @@ PANEL_HTML = r"""
       </div>
     </div>
 
+    <!-- 🔔 价格预警 -->
+    <div class="card" id="alertCard">
+      <div class="card-title" style="font-size:14px;margin-bottom:12px;">🔔 价格预警</div>
+
+      <!-- 总开关 -->
+      <div class="toggle-wrap" onclick="onToggleAlerts()" style="margin-bottom:12px;">
+        <div class="toggle-sw on" id="alertsMasterToggle"></div>
+        <span style="font-size:14px;">启用后台价格监控</span>
+      </div>
+      <div class="setting-hint" style="color:var(--text3);font-size:11px;margin-bottom:6px;">
+        关闭面板后仍在后台运行，触发阈值时弹出托盘通知
+      </div>
+
+      <!-- 股票列表 -->
+      <div id="alertList" style="margin-bottom:10px;">
+        <div id="alertEmptyHint" style="text-align:center;color:var(--text3);padding:16px 0;font-size:13px;">
+          暂无自选股<br><span style="font-size:11px;">点击下方按钮添加，阈值留空则仅显示报价不预警</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="onShowAddAlert()" style="font-size:14px;padding:10px 20px;">＋ 添加股票</button>
+
+      <!-- 添加表单 -->
+      <div id="alertAddForm" style="display:none;margin-top:10px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">添加自选股</div>
+        <div class="setting-item">
+          <label>股票代码（6位数字，自动补全SH/SZ）</label>
+          <input type="text" id="alertCode" placeholder="例如: 600519" maxlength="10" style="width:100%;font-size:15px;padding:10px;">
+        </div>
+        <div class="setting-item">
+          <label>股票名称（选填，留空自动获取）</label>
+          <input type="text" id="alertName" placeholder="例如: 贵州茅台" maxlength="16" style="width:100%;font-size:15px;padding:10px;">
+        </div>
+        <div class="setting-item">
+          <label>📈 上限提醒价（元，不设则留空）</label>
+          <input type="number" id="alertUpper" placeholder="例如: 1600" step="0.01" min="0" style="width:100%;font-size:15px;padding:10px;">
+        </div>
+        <div class="setting-item">
+          <label>📉 下限提醒价（元，不设则留空）</label>
+          <input type="number" id="alertLower" placeholder="例如: 1400" step="0.01" min="0" style="width:100%;font-size:15px;padding:10px;">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn-primary" onclick="onSaveAlert()" style="font-size:14px;padding:10px 20px;">💾 保存</button>
+          <button onclick="onCancelAddAlert()" style="font-size:14px;padding:10px 20px;">取消</button>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title" style="font-size:13px;margin-bottom:10px;">⚡ 高级设置</div>
       <div class="setting-item">
@@ -1340,6 +1388,101 @@ function onConfigChange(key, value) {
 }
 
 // ============================================================
+// Price Alert & Ticker
+// ============================================================
+function refreshAlerts() {
+  pywebview.api.get_alerts().then(function(data) {
+    if (!data || !data.success) return;
+    var mt = document.getElementById('alertsMasterToggle');
+    if (mt) { mt.className = 'toggle-sw ' + (data.enabled ? 'on' : 'off'); }
+    renderAlertList(data.alerts || []);
+  });
+}
+function renderAlertList(alerts) {
+  var container = document.getElementById('alertList');
+  var hint = document.getElementById('alertEmptyHint');
+  if (!container) return;
+  if (!alerts || alerts.length === 0) {
+    container.innerHTML = '';
+    if (hint) { container.appendChild(hint); hint.style.display = 'block'; }
+    return;
+  }
+  if (hint) hint.style.display = 'none';
+  var html = '';
+  for (var i = 0; i < alerts.length; i++) {
+    var a = alerts[i];
+    var statusIcon = a.status === 'triggered_upper' ? '\u{1F534}' :
+                     a.status === 'triggered_lower' ? '\u{1F7E2}' :
+                     !a.enabled ? '⏸' : '●';
+    var statusColor = a.status === 'triggered_upper' ? 'var(--red)' :
+                      a.status === 'triggered_lower' ? 'var(--green)' :
+                      !a.enabled ? 'var(--text3)' : 'var(--green)';
+    var statusText = a.status === 'triggered_upper' ? '已触发(上限)' :
+                     a.status === 'triggered_lower' ? '已触发(下限)' :
+                     !a.enabled ? '已暂停' : '监控中';
+    var upVal = a.price_upper != null ? parseFloat(a.price_upper).toFixed(2) : '未设';
+    var loVal = a.price_lower != null ? parseFloat(a.price_lower).toFixed(2) : '未设';
+    html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+        '<span style="font-size:15px;font-weight:700;color:var(--text1);">' + (a.name || a.code) + '</span>' +
+        '<span style="font-size:11px;color:' + statusColor + ';font-weight:600;">' + statusIcon + ' ' + statusText + '</span>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;font-size:12px;">' +
+        '<span style="color:var(--red);">\u{1F4C8} ' + upVal + '</span>' +
+        '<span style="color:var(--text3);">|</span>' +
+        '<span style="color:var(--green);">\u{1F4C9} ' + loVal + '</span>' +
+        '<span style="flex:1;"></span>' +
+        '<button onclick="onTestAlert(\'' + a.code + '\')" style="font-size:10px;padding:3px 8px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:3px;cursor:pointer;">\u{1F514} 测试</button>' +
+        '<button onclick="onDeleteAlert(\'' + a.code + '\')" style="font-size:10px;padding:3px 8px;background:rgba(240,83,75,0.1);color:var(--red);border:1px solid rgba(240,83,75,0.2);border-radius:3px;cursor:pointer;">✕</button>' +
+      '</div>' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+function onToggleAlerts() {
+  pywebview.api.toggle_alerts().then(function(r) {
+    if (r.success) { showToast(r.enabled ? '后台监控已开启' : '后台监控已关闭'); refreshAlerts(); }
+    else showToast('操作失败: ' + r.error);
+  });
+}
+function onShowAddAlert() {
+  document.getElementById('alertAddForm').style.display = 'block';
+}
+function onCancelAddAlert() {
+  document.getElementById('alertAddForm').style.display = 'none';
+  document.getElementById('alertCode').value = '';
+  document.getElementById('alertName').value = '';
+  document.getElementById('alertUpper').value = '';
+  document.getElementById('alertLower').value = '';
+}
+function onSaveAlert() {
+  var code = document.getElementById('alertCode').value.trim();
+  var name = document.getElementById('alertName').value.trim();
+  var up = document.getElementById('alertUpper').value.trim();
+  var lo = document.getElementById('alertLower').value.trim();
+  if (!code) { showToast('请输入股票代码'); return; }
+  var upper = up ? parseFloat(up) : null;
+  var lower = lo ? parseFloat(lo) : null;
+  if (!upper && !lower) { showToast('至少设置一个阈值，或都留空仅看报价'); return; }
+  if (upper !== null && lower !== null && upper <= lower) { showToast('上限必须大于下限'); return; }
+  pywebview.api.save_alert(code, name, upper, lower, true).then(function(r) {
+    if (r.success) { showToast('已保存'); onCancelAddAlert(); refreshAlerts(); }
+    else showToast('保存失败: ' + r.error);
+  });
+}
+function onDeleteAlert(code) {
+  pywebview.api.delete_alert(code).then(function(r) {
+    if (r.success) { showToast('已删除'); refreshAlerts(); }
+    else showToast('删除失败: ' + r.error);
+  });
+}
+function onTestAlert(code) {
+  pywebview.api.test_alert_notification(code).then(function(r) {
+    showToast(r.success ? '测试通知已发送，请查看托盘弹窗' : '发送失败: ' + r.error);
+  });
+}
+
+// ============================================================
 // Polling
 // ============================================================
 function refreshHistory() {
@@ -1800,6 +1943,133 @@ class PanelAPI:
                 "warnings": pkg.warnings,
             }
         except Exception as e:
+            return {"success": False, "error": str(e), "detail": traceback.format_exc()}
+
+    # ── Alert & Ticker API ──
+
+    def get_alerts(self) -> Dict[str, Any]:
+        """Return all alert configs + runtime states for the settings panel."""
+        try:
+            from core.config import load_alerts, get_alerts_config
+            master = get_alerts_config()
+            alerts_cfg = load_alerts()
+            alerts_list = []
+            engine = self._clipper._alert_engine
+            for code, cfg in alerts_cfg.items():
+                entry = {
+                    "code": code,
+                    "name": cfg.name,
+                    "enabled": cfg.enabled,
+                    "price_upper": cfg.price_upper,
+                    "price_lower": cfg.price_lower,
+                    "upper_triggered": cfg.upper_triggered,
+                    "lower_triggered": cfg.lower_triggered,
+                    "current_price": None,
+                    "change_pct": None,
+                    "status": "disabled" if not cfg.enabled else "normal",
+                    "last_update": cfg.last_update,
+                }
+                # Runtime state from engine
+                if engine and code in engine._states if hasattr(engine, '_states') else {}:
+                    pass  # states not exposed directly — use triggered flags
+                if cfg.upper_triggered:
+                    entry["status"] = "triggered_upper"
+                elif cfg.lower_triggered:
+                    entry["status"] = "triggered_lower"
+                alerts_list.append(entry)
+            return {
+                "success": True,
+                "enabled": master.get("enabled", True),
+                "poll_interval": master.get("poll_interval", 5),
+                "max_alerts": master.get("max_alerts", 10),
+                "alerts": alerts_list,
+            }
+        except Exception as e:
+            import traceback
+            return {"success": False, "error": str(e), "detail": traceback.format_exc()}
+
+    def save_alert(self, code: str, name: str, price_upper: Optional[float],
+                   price_lower: Optional[float], enabled: bool = True) -> Dict:
+        """Create or update a single alert."""
+        try:
+            code = code.strip().upper()
+            # Auto-prefix SH/SZ
+            raw = code.replace("SH", "").replace("SZ", "").replace("HK", "")
+            if raw.isdigit() and len(raw) == 6:
+                code = ("SH" if raw.startswith(("60", "68")) else "SZ") + raw
+            elif not (code.startswith("SH") or code.startswith("SZ")):
+                return {"success": False, "error": "无效的代码格式，请输入6位数字如 600519"}
+
+            # Validate
+            if price_upper is None and price_lower is None:
+                return {"success": False, "error": "至少设置一个阈值（上限或下限），或都留空仅看报价"}
+            if price_upper is not None and price_lower is not None and price_upper <= price_lower:
+                return {"success": False, "error": "上限必须大于下限"}
+
+            # Max alerts check
+            from core.config import load_alerts, get_alerts_config, save_alert as save_alert_cfg
+            existing = load_alerts()
+            if code not in existing and len(existing) >= get_alerts_config().get("max_alerts", 10):
+                return {"success": False, "error": f"最多{get_alerts_config().get('max_alerts', 10)}条预警"}
+
+            from core.alert_engine import AlertConfig
+            cfg = AlertConfig(
+                code=code, name=name.strip() if name else "",
+                enabled=enabled,
+                price_upper=float(price_upper) if price_upper else None,
+                price_lower=float(price_lower) if price_lower else None,
+            )
+            save_alert_cfg(cfg)
+            if self._clipper._alert_engine:
+                self._clipper._alert_engine.reload()
+            return {"success": True}
+        except Exception as e:
+            import traceback
+            return {"success": False, "error": str(e), "detail": traceback.format_exc()}
+
+    def delete_alert(self, code: str) -> Dict:
+        """Delete a single alert."""
+        try:
+            from core.config import delete_alert_config
+            delete_alert_config(code)
+            if self._clipper._alert_engine:
+                self._clipper._alert_engine.reload()
+            return {"success": True}
+        except Exception as e:
+            import traceback
+            return {"success": False, "error": str(e), "detail": traceback.format_exc()}
+
+    def toggle_alerts(self) -> Dict:
+        """Toggle master alert switch."""
+        try:
+            from core.config import _save_alerts_config, get_alerts_config
+            current = get_alerts_config()
+            new_enabled = not current.get("enabled", True)
+            _save_alerts_config({"enabled": new_enabled, "poll_interval": current.get("poll_interval", 5),
+                                 "buffer_pct": current.get("buffer_pct", 2.0),
+                                 "max_alerts": current.get("max_alerts", 10)})
+            return {"success": True, "enabled": new_enabled}
+        except Exception as e:
+            import traceback
+            return {"success": False, "error": str(e), "detail": traceback.format_exc()}
+
+    def test_alert_notification(self, code: str) -> Dict:
+        """Send a test tray notification."""
+        try:
+            icon = getattr(self._clipper, '_icon', None)
+            if icon is None:
+                return {"success": False, "error": "托盘图标尚未创建，请重启程序"}
+            from core.config import load_alerts
+            alerts = load_alerts()
+            cfg = alerts.get(code)
+            name = cfg.name if cfg else code
+            icon.notify(
+                f"这是测试通知。若看到此消息，表示预警通知功能正常。\n股票: {name}",
+                title=f"🔔 测试通知 — {name}"
+            )
+            return {"success": True}
+        except Exception as e:
+            import traceback
             return {"success": False, "error": str(e), "detail": traceback.format_exc()}
 
     def save_last_to_file(self) -> Dict[str, Any]:

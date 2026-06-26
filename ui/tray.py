@@ -142,6 +142,9 @@ def run_tray(clipper: "StockClipper", auto_show_panel: bool = False) -> None:
     # Build menu with reference to icon (for notifications)
     icon.menu = _create_menu(clipper, icon)
 
+    # Set icon reference so AlertEngine can send notifications
+    clipper._icon = icon
+
     # Run the tray (blocking on main thread)
     # Panel opens via right-click menu "显示面板" — runs on main thread naturally
     icon.run()
