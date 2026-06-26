@@ -480,6 +480,10 @@ PANEL_HTML = r"""
       <option value="weekly">周线</option>
       <option value="monthly">月线</option>
     </select>
+    <input type="number" id="searchCount" value="250" min="5" max="9999"
+           style="width:55px;background:var(--surface);color:var(--text1);border:1px solid var(--border);
+                  border-radius:var(--radius-sm);padding:9px 4px;font-size:12px;font-family:var(--font-mono);
+                  text-align:center;outline:none;" title="K线条数">
     <button class="btn-search" id="searchBtn" onclick="onSearch()">查询</button>
   </div>
   <div class="search-options">
@@ -524,18 +528,16 @@ PANEL_HTML = r"""
       <table class="ind-table" id="rcIndicators"></table>
 
       <hr style="border-color:var(--border);margin:12px 0;">
-      <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">🤖 AI分析（可选）</div>
-      <textarea id="formulaInput" placeholder="粘贴通达信选股公式（可选）&#10;例: CROSS(MA(C,5),MA(C,20)) AND RSI(6)>50" style="min-height:60px;"></textarea>
-      <div class="card-actions" style="margin-top:6px;">
-        <button onclick="onGeneratePrompt()">✨ 生成分析提示词</button>
-        <button onclick="onQuickAnalyze()">📊 快速技术分析</button>
-        <button onclick="document.getElementById('formulaInput').value=''" style="font-size:10px;">清空</button>
-      </div>
       <div class="card-actions">
-        <button class="btn-primary" onclick="onCopyJSON()">📋 复制完整JSON</button>
-        <button onclick="onCopyPrompt()">🤖 生成AI分析提示词</button>
-        <button onclick="onSaveFile()">💾 保存为JSON文件</button>
+        <button class="btn-primary" onclick="onCopyJSON()">📋 复制JSON</button>
+        <button onclick="onSaveFile()">💾 保存文件</button>
+        <button onclick="onSmartAnalyze()" style="background:var(--purple-bg);color:var(--purple);border-color:rgba(157,122,239,0.3);">🤖 AI分析</button>
+        <button onclick="onFullAnalyze()" style="background:rgba(240,160,64,0.12);color:var(--orange);border-color:rgba(240,160,64,0.3);">🧠 深度分析</button>
       </div>
+      <details style="margin-top:8px;font-size:11px;color:var(--text2);">
+        <summary style="cursor:pointer;">📐 通达信公式（可选）</summary>
+        <textarea id="formulaInput" placeholder="粘贴选股公式&#10;例: CROSS(MA(C,5),MA(C,20)) AND RSI(6)>50" style="min-height:50px;margin-top:6px;"></textarea>
+      </details>
     </div>
 
     <div id="emptyResult">
@@ -710,6 +712,8 @@ function onSearch() {
   if (!code) { showToast('无效代码。支持: 000001 / SH600519 / HK00700'); return; }
 
   var period = document.getElementById('searchPeriod').value;
+  var count = parseInt(document.getElementById('searchCount').value) || 250;
+  count = Math.max(5, Math.min(9999, count));
   var sp = {daily:'day', weekly:'week', monthly:'month'};
   var kp = sp[period] || 'day';
   var btn = document.getElementById('searchBtn');
@@ -720,14 +724,14 @@ function onSearch() {
 
   try {
     Promise.all([
-      StockApi.stocks.auto.getKlines(code, {period: kp, count: 250}),
+      StockApi.stocks.auto.getKlines(code, {period: kp, count: count}),
       StockApi.stocks.auto.getStock(code)
     ]).then(function(results) {
       var klines = results[0], stock = results[1];
       pywebview.api.compute_indicators(code, klines, {
         name: stock.name, now: stock.now, percent: stock.percent,
         high: stock.high, low: stock.low, yesterday: stock.yesterday
-      }).then(function(detail) {
+      }, period).then(function(detail) {
         window._currentResult = detail;
         renderResultCard(detail);
         renderChart(klines);
@@ -822,7 +826,7 @@ function renderResultCard(detail) {
   document.getElementById('rcTitle').innerHTML = name + '<span class="code">' + code + '</span>';
 
   // Period label
-  var pLabels = {daily: '日线数据', weekly: '周线数据', monthly: '月线数据'};
+  var pLabels = {daily:'日线', weekly:'周线', monthly:'月线', '1min':'1分钟', '5min':'5分钟', '15min':'15分钟', '30min':'30分钟', '60min':'60分钟'};
   document.getElementById('rcPeriod').textContent = pLabels[meta.period] || meta.period || '';
 
   // Meta tags
@@ -888,25 +892,56 @@ function renderResultCard(detail) {
 // ============================================================
 // Card actions
 // ============================================================
-function onCopyJSON() {
-  pywebview.api.copy_last_json().then(function(r) {
-    if (r && r.success) {
-      showToast('完整JSON已复制到剪贴板，可直接粘贴到AI对话框');
-    } else {
-      showToast((r && r.error) || '暂无数据可复制');
-      if (r && r.detail) window._showError('复制失败', r.error + '\n\n' + r.detail);
-    }
-  });
+function onFullAnalyze() {
+  if (!window._currentResult) { showToast('请先查询股票数据'); return; }
+  var r = window._currentResult;
+  var s = r.summary, ind = r.indicators, m = r.meta, macd = ind.macd || {}, boll = ind.boll || {};
+  var prompt = '# 深度技术分析任务\n\n';
+  prompt += '你是一位资深量化分析师。以下是 **' + m.code + ' ' + m.name + '** 的完整技术数据，请进行全面深度分析。\n\n';
+  prompt += '## 📊 完整技术指标\n\n';
+  prompt += '| 指标 | 数值 | 说明 |\n|------|------|------|\n';
+  prompt += '| MA5/MA10/MA20/MA60 | ' + [ind.ma5, ind.ma10, ind.ma20, ind.ma60].map(function(v){return v!=null?v.toFixed(2):'N/A'}).join(' / ') + ' | 多周期均线 |\n';
+  prompt += '| MACD DIF/DEA/BAR | ' + macd.dif + ' / ' + macd.dea + ' / ' + macd.bar + ' | 趋势动能 |\n';
+  prompt += '| RSI(6)/RSI(12) | ' + (ind.rsi_6||'N/A') + ' / ' + (ind.rsi_12||'N/A') + ' | 超买超卖 |\n';
+  prompt += '| BOLL | 上' + (boll.upper||'N/A') + ' 中' + (boll.mid||'N/A') + ' 下' + (boll.lower||'N/A') + ' | 布林带 |\n';
+  prompt += '| 区间涨跌 | ' + s.period_change + '% | 区间波动 |\n';
+  prompt += '| 最高/最低 | ' + s.max_close + ' / ' + s.min_close + ' | 区间极值 |\n';
+  prompt += '| 年化波动率 | ' + s.volatility + '% | 风险度量 |\n';
+  prompt += '| 平均成交量 | ' + (s.avg_volume||0) + ' | 流动性 |\n\n';
+  prompt += '## 📈 完整K线数据\n\n```json\n' + JSON.stringify(r.data, null, 2) + '\n```\n\n';
+  prompt += '## 📐 分析框架\n\n';
+  prompt += '1. **趋势判断**: 均线排列 + MACD方向，给出多/空/震荡结论\n';
+  prompt += '2. **支撑压力**: BOLL带 + 均线 + 区间极值，给出关键价位\n';
+  prompt += '3. **量价关系**: 成交量趋势 + 价格配合度\n';
+  prompt += '4. **形态识别**: 是否存在金叉/死叉/顶底背离/突破信号\n';
+  prompt += '5. **风险评估**: 波动率 + RSI极端值 + 仓位建议\n';
+  prompt += '6. **操作建议**: 方向/仓位/入场位/止损位/目标位\n\n';
+  prompt += '请逐条分析并给出综合评分（1-10分）。';
+  var ta = document.createElement('textarea');
+  ta.value = prompt; document.body.appendChild(ta); ta.select();
+  document.execCommand('copy'); document.body.removeChild(ta);
+  showToast('深度分析提示词已复制！（含完整K线数据）');
 }
 
-function onCopyPrompt() {
-  pywebview.api.quick_analysis_prompt().then(function(r) {
-    if (r && r.success) {
-      showToast('AI分析提示词已复制到剪贴板，请粘贴到 ChatGPT/DeepSeek/Claude');
-    } else {
-      showToast((r && r.error) || '操作失败');
-      if (r && r.detail) window._showError('生成提示词失败', r.error + '\n\n' + r.detail);
-    }
+function onSmartAnalyze() {
+  var formula = document.getElementById('formulaInput').value.trim();
+  if (formula) {
+    pywebview.api.generate_prompt(formula).then(function(r) {
+      if (r && r.success) showToast('选股分析提示词已复制！');
+      else showToast((r && r.error) || '失败');
+    });
+  } else {
+    pywebview.api.quick_analysis_prompt().then(function(r) {
+      if (r && r.success) showToast('技术分析提示词已复制！');
+      else showToast((r && r.error) || '失败');
+    });
+  }
+}
+
+function onCopyJSON() {
+  pywebview.api.copy_last_json().then(function(r) {
+    if (r && r.success) showToast('JSON已复制到剪贴板');
+    else showToast((r && r.error) || '暂无数据');
   });
 }
 
@@ -922,32 +957,6 @@ function onSaveFile() {
 }
 
 // ============================================================
-// AI Prompt
-// ============================================================
-function onGeneratePrompt() {
-  var formula = document.getElementById('formulaInput').value.trim();
-  if (!formula) { showToast('请先粘贴通达信选股公式到文本框中'); return; }
-  pywebview.api.generate_prompt(formula).then(function(r) {
-    if (r && r.success) {
-      showToast('选股分析提示词已生成并复制到剪贴板！请粘贴到AI对话框');
-    } else {
-      showToast((r && r.error) || '生成失败');
-      if (r && r.detail) window._showError('生成提示词失败', r.error + '\n\n' + r.detail);
-    }
-  });
-}
-
-function onQuickAnalyze() {
-  pywebview.api.quick_analysis_prompt().then(function(r) {
-    if (r && r.success) {
-      showToast('技术分析提示词已复制到剪贴板！请粘贴到AI对话框');
-    } else {
-      showToast((r && r.error) || '暂无股票数据，请先查询股票代码');
-      if (r && r.detail) window._showError('快速分析失败', r.error + '\n\n' + r.detail);
-    }
-  });
-}
-
 // ============================================================
 // Settings
 // ============================================================
@@ -1144,7 +1153,7 @@ class PanelAPI:
     def ping(self) -> str:
         return "pong"
 
-    def compute_indicators(self, code: str, klines: List[Dict], stock_info: Dict) -> Dict[str, Any]:
+    def compute_indicators(self, code: str, klines: List[Dict], stock_info: Dict, period: str = "daily") -> Dict[str, Any]:
         """JS→Python: compute technical indicators from stock-api kline data."""
         from data.indicators import calc_all_indicators
         from data.builder import build_summary
@@ -1166,7 +1175,7 @@ class PanelAPI:
                 "industry": "",
                 "pe_ttm": -1,
                 "total_mv": -1,
-                "period": "daily",
+                "period": period,
                 "data_count": len(klines),
                 "start_date": klines[0].get("date", "") if klines else "",
                 "end_date": klines[-1].get("date", "") if klines else "",
