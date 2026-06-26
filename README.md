@@ -1,42 +1,42 @@
-# Stock JSON Clipper V2.1
+# Stock JSON Clipper V3.1
 
-A股数据与AI分析之间的桥梁。复制股票代码即可生成结构化JSON，粘贴到ChatGPT/DeepSeek/Claude进行分析。
+A股数据与AI分析之间的桥梁。输入股票代码，获取完整技术数据、SVG图表和AI分析提示词。
 
 ## 下载
 
-从 [Releases](https://github.com/ABLingss/Stock-JSON-Clipper/releases) 下载最新版本：
+从 [Releases](https://github.com/ABLingss/Stock-JSON-Clipper/releases) 下载：
 
-- **Windows 10/11**: `StockJSONClipper.exe`（绿色免安装）或 `StockJSONClipper-Setup-V2.1.exe`（安装器）
-- **Linux**: 从源码运行（见下方）
+- **Windows 10/11**: `StockJSONClipper.exe`（绿色免安装）
+- **Linux**: 从源码运行
 
-> 不再支持 macOS。
+## 功能
 
-## 使用方法
+### 数据查询
+输入代码查询，支持 A股 / 港股。数据源 stock-api 自动灾备（腾讯→新浪→东财）。
 
-### 启动
+### SVG 技术图表
+- K线 + 成交量 + MACD + RSI 统一画布
+- MACD/RSI 可选开关
+- 鼠标任意 X 轴位置悬停显示完整数据
+- 点击图表弹出大图
 
-双击 `StockJSONClipper.exe`，系统托盘出现图标。右键 → **显示面板** 打开操作界面。
+### 多股对比
+点 **+** 添加多只股票，并排对比 MA/MACD/RSI/涨跌幅等指标，每只独立图表。
 
-### 获取数据
+### AI 分析
+- **AI分析**: 填了公式就分析公式，没填就快速技术分析
+- **深度分析**: 完整K线数据 + 6维度分析框架
+- 对比模式自动生成多股排序提示词
 
-**剪贴板自动识别：** 在股票软件中复制6位代码（`Ctrl+C`），自动生成JSON到剪贴板，直接粘贴给AI。
-
-**面板手动输入：** 在搜索框输入代码点击查询。
-
-### 输入格式
-
+### 数据格式
 | 输入 | 含义 |
 |------|------|
-| `000001` | 日线数据 |
-| `W:000001` | 周线数据 |
-| `M:000001` | 月线数据 |
-| `#000001` | 保存为本地JSON |
+| `000001` | 深市平安银行 |
+| `600036` | 沪市 |
+| `SH600519` | stock-api 格式（推荐） |
+| `HK00700` | 港股腾讯 |
 
-### 功能
-
-- **数据查询**: K线 + MA/MACD/RSI/BOLL 技术指标
-- **AI分析**: 粘贴通达信选股公式 → 生成分析提示词
-- **实时盯盘**: 新浪实时行情，红涨绿跌，最多6股同屏
+周期：1分/5分/15分/30分/60分/日/周/月
 
 ## 从源码运行
 
@@ -44,36 +44,19 @@ A股数据与AI分析之间的桥梁。复制股票代码即可生成结构化JS
 git clone https://github.com/ABLingss/Stock-JSON-Clipper.git
 cd Stock-JSON-Clipper
 pip install pyperclip pystray pywebview requests Pillow
-python main.py                 # 托盘模式
-python main.py --code 000001   # CLI 模式
-```
-
-## 构建
-
-```bash
-pip install pyinstaller pyperclip pystray pywebview requests Pillow
-
-# Windows
-python -m PyInstaller StockJSONClipper.spec
-
-# 安装器 (需 Inno Setup 6)
-iscc installer.iss
+python main.py
 ```
 
 ## 项目结构
 
 ```
-core/      配置、缓存、剪贴板、日志、模块注册
-api/       腾讯/新浪/东财 K线 + 新浪实时行情
-data/      技术指标计算、JSON 构建
-ui/        系统托盘、WebView 面板
-modules/   AI分析、实时盯盘
+main.py              入口
+core/                配置、缓存、模块注册、日志
+data/                技术指标计算、JSON构建
+ui/                  pystray托盘 + WebView面板
+modules/prompt/      AI提示词生成
 ```
-
-## 数据来源
-
-腾讯财经、新浪财经、东方财富的公开API。
 
 ## License
 
-GPL-3.0 — 本项目集成了 [RollerCoaster](https://github.com/YQBaobao/RollerCoaster) 的实时行情组件。
+GPL-3.0 — 集成了 [stock-api](https://github.com/zhangxiangliang/stock-api) (MIT) 和 [RollerCoaster](https://github.com/YQBaobao/RollerCoaster) (GPL-3.0)。
