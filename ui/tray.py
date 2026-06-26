@@ -89,11 +89,19 @@ def _create_menu(clipper: "StockClipper", icon: pystray.Icon) -> pystray.Menu:
     """
     def on_show_panel():
         """Show the PyWebView info panel."""
+        icon.notify("正在打开面板...", title="Stock JSON Clipper")
         try:
             from ui.panel import show_panel
             show_panel(clipper)
         except Exception as e:
-            icon.notify(f"无法打开面板: {e}", title="Stock JSON Clipper")
+            import traceback
+            err = f"{type(e).__name__}: {e}"
+            icon.notify(f"面板错误: {err}", title="Stock JSON Clipper")
+            try:
+                from core.logging_setup import get_logger
+                get_logger("tray").error("Panel failed: %s", traceback.format_exc())
+            except Exception:
+                pass
 
     def on_clear_cache():
         clipper.clear_cache()
