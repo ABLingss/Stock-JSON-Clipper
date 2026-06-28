@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.9
 """
-test_pipeline.py — Unit tests for Stock JSON Clipper core pipeline (M2).
+test_pipeline.py — Unit tests for 灵析 (LingXi) core pipeline (M2).
 
 Tests:
   1. Indicator calculations (with known-answer test data)
@@ -341,7 +341,7 @@ def test_stock_error():
 # ============================================================
 if __name__ == "__main__":
     print("=" * 60)
-    print("🧪 Stock JSON Clipper — Pipeline Test Suite")
+    print("🧪 灵析 (LingXi) — Pipeline Test Suite")
     print("=" * 60)
 
     test_clipboard_patterns()

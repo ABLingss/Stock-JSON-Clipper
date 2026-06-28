@@ -1,5 +1,5 @@
 #!/bin/bash
-# build.sh — PyInstaller build script for Stock JSON Clipper V2.0
+# build.sh — PyInstaller build script for 灵析 (LingXi) V3.2
 #
 # Produces single-file executables for the current platform.
 #
@@ -8,18 +8,18 @@
 #   bash build.sh clean        # Clean build artifacts
 #
 # Output per platform:
-#   Windows: dist/StockJSONClipper.exe
-#   Linux:   dist/StockJSONClipper
-#   macOS:   dist/StockJSONClipper
+#   Windows: dist/LingXi.exe
+#   Linux:   dist/LingXi
+#   macOS:   dist/LingXi
 
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-NAME="StockJSONClipper"
+NAME="LingXi"
 ENTRY="main.py"
 
 echo "============================================"
-echo " Building Stock JSON Clipper V2.0"
+echo " Building 灵析 (LingXi) V3.2"
 echo " Platform: $(uname -s)"
 echo "============================================"
 echo ""

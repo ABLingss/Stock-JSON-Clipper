@@ -1,5 +1,5 @@
 """
-tray_app.py — System tray icon and menu for Stock JSON Clipper V3.2.
+tray_app.py — System tray icon and menu for 灵析 (LingXi) V3.2.
 
 Uses pystray + PIL to create a tray icon with right-click menu:
   - Show Panel
@@ -89,14 +89,14 @@ def _create_menu(clipper: "StockClipper", icon: pystray.Icon) -> pystray.Menu:
     """
     def on_show_panel():
         """Show the PyWebView info panel."""
-        icon.notify("正在打开面板...", title="Stock JSON Clipper")
+        icon.notify("正在打开面板...", title="灵析 LingXi")
         try:
             from ui.panel import show_panel
             show_panel(clipper)
         except Exception as e:
             import traceback
             err = f"{type(e).__name__}: {e}"
-            icon.notify(f"面板错误: {err}", title="Stock JSON Clipper")
+            icon.notify(f"面板错误: {err}", title="灵析 LingXi")
             try:
                 from core.logging_setup import get_logger
                 get_logger("tray").error("Panel failed: %s", traceback.format_exc())
@@ -105,7 +105,7 @@ def _create_menu(clipper: "StockClipper", icon: pystray.Icon) -> pystray.Menu:
 
     def on_clear_cache():
         clipper.clear_cache()
-        icon.notify("缓存已清空", title="Stock JSON Clipper")
+        icon.notify("缓存已清空", title="灵析 LingXi")
 
     def on_exit():
         icon.stop()
@@ -134,9 +134,9 @@ def run_tray(clipper: "StockClipper", auto_show_panel: bool = False) -> None:
 
     # Create icon without menu first
     icon = pystray.Icon(
-        name="StockJSONClipper",
+        name="LingXi",
         icon=icon_image,
-        title="Stock JSON Clipper V3.2",
+        title="灵析 V3.2 (LingXi)",
     )
 
     # Build menu with reference to icon (for notifications)

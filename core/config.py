@@ -1,5 +1,5 @@
 """
-core.config — Configuration management for Stock JSON Clipper V2.1.
+core.config — Configuration management for 灵析 (LingXi).
 Reads/writes config.ini using configparser.
 Creates default config.ini next to the executable (or project root in dev).
 """

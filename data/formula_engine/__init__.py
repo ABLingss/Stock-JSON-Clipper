@@ -1,5 +1,5 @@
 """
-formula_engine — Zero-dependency TDX formula engine for Stock JSON Clipper.
+formula_engine — Zero-dependency TDX formula engine for 灵析 (LingXi).
 
 Unified entry point:
     prepare(klines_map, stock_info_map, formula, ...) → AnalysisPackage

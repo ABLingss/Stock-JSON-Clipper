@@ -5,8 +5,6 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-*.spec
-
 # IDE
 .vscode/
 .idea/
@@ -27,7 +25,7 @@ config.ini
 
 # PyInstaller
 *.exe
-StockJSONClipper
-StockJSONClipper.app
+LingXi
+LingXi.app
 
 tmp/

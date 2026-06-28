@@ -1,5 +1,5 @@
 """
-indicators.py — Pure Python technical indicator calculations for Stock JSON Clipper.
+indicators.py — Pure Python technical indicator calculations for 灵析 (LingXi).
 
 **No numpy/pandas** — uses only built-in math and statistics modules.
 All functions operate on lists of float values (typically closing prices).

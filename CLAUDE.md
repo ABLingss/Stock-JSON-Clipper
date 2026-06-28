@@ -1,4 +1,4 @@
-# CLAUDE.md — Stock JSON Clipper
+# CLAUDE.md — 灵析 (LingXi)
 
 ## Project Context
 
@@ -56,9 +56,9 @@ A single missing `}` in a JS function prevents ALL subsequent scripts from execu
 ## Build & Release
 
 ```bash
-python -m PyInstaller StockJSONClipper.spec   # Build exe
-iscc installer.iss                            # Build Windows installer
-gh release create v3.0 --title "..." dist/StockJSONClipper.exe
+python -m PyInstaller LingXi.spec   # Build exe
+iscc installer.iss                   # Build Windows installer
+gh release create v3.2 --title "..." dist/LingXi.exe
 ```
 
 **Release checklist:**
@@ -67,4 +67,4 @@ gh release create v3.0 --title "..." dist/StockJSONClipper.exe
 - [ ] Right-click tray → "显示面板" → panel opens
 - [ ] Search "000001" → data loads + chart renders + history updates
 - [ ] Copy JSON / Save file / AI analysis / Deep analysis buttons work
-- [ ] Check StockJSONClipper.log for errors
+- [ ] Check LingXi.log for errors

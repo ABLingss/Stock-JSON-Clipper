@@ -1,5 +1,5 @@
 """
-core.clipper — Core orchestrator for Stock JSON Clipper V3.0.
+core.clipper — Core orchestrator for 灵析 (LingXi) V3.0.
 
 Data fetching is handled by stock-api (browser bundle) in the panel.
 Python side manages: config, cache, module registry, file I/O, tray.

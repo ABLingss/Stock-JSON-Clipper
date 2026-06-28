@@ -1,5 +1,5 @@
 """
-series.py — Full-length indicator time-series computation for Stock JSON Clipper.
+series.py — Full-length indicator time-series computation for 灵析 (LingXi).
 
 Zero dependencies (math + statistics stdlib only). Every output array has the
 same length as the input klines; positions where there is insufficient data are

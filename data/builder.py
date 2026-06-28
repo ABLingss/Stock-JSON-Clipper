@@ -1,5 +1,5 @@
 """
-data_builder.py — JSON assembly for Stock JSON Clipper.
+data_builder.py — JSON assembly for 灵析 (LingXi).
 
 Combines K-line data, stock info, technical indicators, and statistical
 summary into the final output JSON structure defined in spec §4.3.

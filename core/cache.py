@@ -1,5 +1,5 @@
 """
-cache_manager.py — Thread-safe in-memory TTL cache for Stock JSON Clipper.
+cache_manager.py — Thread-safe in-memory TTL cache for 灵析 (LingXi).
 
 Key format: "{code}_{period}" (e.g. "000001_daily")
 Default TTL: 300 seconds (5 minutes).

@@ -1,11 +1,11 @@
-; Inno Setup Script for Stock JSON Clipper V3.2
+; Inno Setup Script for 灵析 (LingXi) V3.2
 ; Produces a professional Windows installer (.exe)
 
-#define MyAppName "Stock JSON Clipper"
+#define MyAppName "LingXi"
 #define MyAppVersion "3.2"
-#define MyAppPublisher "Stock JSON Clipper"
-#define MyAppURL "https://github.com/ABLingss/Stock-JSON-Clipper"
-#define MyAppExeName "StockJSONClipper.exe"
+#define MyAppPublisher "LingXi"
+#define MyAppURL "https://github.com/ABLingss/LingXi"
+#define MyAppExeName "LingXi.exe"
 
 [Setup]
 AppId={{A8B3C5D7-1234-4567-89AB-CDEF01234567}
@@ -15,11 +15,11 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\StockJSONClipper
+DefaultDirName={autopf}\LingXi
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=dist
-OutputBaseFilename=StockJSONClipper-Setup-V3.2
+OutputBaseFilename=LingXi-Setup-V3.2
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -33,15 +33,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional icons:"
 
 [Files]
-Source: "dist\StockJSONClipper.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\LingXi.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Stock JSON Clipper V3.2"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\Uninstall Stock JSON Clipper"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Stock JSON Clipper V3.2"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{group}\灵析 V3.2 (LingXi)"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\Uninstall 灵析 (LingXi)"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\灵析 V3.2 (LingXi)"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch Stock JSON Clipper"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch 灵析 (LingXi)"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\*.json"

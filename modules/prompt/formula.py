@@ -1,5 +1,5 @@
 """
-formula_prompt.py — TDX formula → AI prompt converter for Stock JSON Clipper V3.0.
+formula_prompt.py — TDX formula → AI prompt converter for 灵析 (LingXi) V3.0.
 
 Generates professional A-share technical analysis prompts with:
   - Multi-timeframe resonance analysis (日/周/月)

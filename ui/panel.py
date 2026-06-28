@@ -1,5 +1,5 @@
 """
-web_panel.py — Info panel for Stock JSON Clipper V3.2.
+web_panel.py — Info panel for 灵析 (LingXi) V3.2.
 
 Tahoe-inspired professional UI with full Chinese localization:
   - Every indicator label includes Chinese explanation
@@ -779,7 +779,7 @@ PANEL_HTML = r"""
 <header class="header">
   <div class="header-left">
     <div class="logo-icon">📈</div>
-    <span class="logo-text">Stock JSON Clipper</span>
+    <span class="logo-text">灵析 LingXi</span>
     <span class="logo-ver">V3.2</span>
   </div>
   <div class="header-right">
@@ -1039,7 +1039,7 @@ PANEL_HTML = r"""
   <div class="modal-content" id="chartModalContent"></div>
 </div>
 
-<div class="footer">Stock JSON Clipper V3.2 · GPL-3.0 · 数据来源: 腾讯财经/新浪财经/东方财富</div>
+<div class="footer">灵析 V3.2 (LingXi) · GPL-3.0 · 数据来源: 腾讯财经/新浪财经/东方财富</div>
 
 <script>
 // ============================================================
@@ -2590,7 +2590,7 @@ def show_panel(clipper: "StockClipper") -> None:
         api = PanelAPI(clipper)
 
         _panel_window = webview.create_window(
-            title="Stock JSON Clipper V3.2",
+            title="灵析 V3.2 (LingXi)",
             html=PANEL_HTML,
             width=680,
             height=760,

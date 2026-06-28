@@ -1,5 +1,5 @@
 """
-core.logging_setup — Structured logging for Stock JSON Clipper.
+core.logging_setup — Structured logging for 灵析 (LingXi).
 
 Provides a pre-configured logger with rotating file output.
 Replaces ad-hoc error.log writes with proper leveled logging.
@@ -21,7 +21,7 @@ _log_initialized = False
 def init_logging(log_dir: str = "", level: int = logging.INFO) -> None:
     """Initialize rotating file logging.
 
-    Creates StockJSONClipper.log with rotation (max 1MB, keep 3 backups).
+    Creates LingXi.log with rotation (max 1MB, keep 3 backups).
 
     Args:
         log_dir: Directory for log files (default: current directory).
@@ -31,7 +31,7 @@ def init_logging(log_dir: str = "", level: int = logging.INFO) -> None:
     if _log_initialized:
         return
 
-    log_path = os.path.join(log_dir or os.getcwd(), "StockJSONClipper.log")
+    log_path = os.path.join(log_dir or os.getcwd(), "LingXi.log")
 
     handler = RotatingFileHandler(
         log_path,
